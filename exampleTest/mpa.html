@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>Frontend Monitor SDK MPA 测试</title>
+</head>
+<body>
+<h1>Frontend Monitor SDK MPA 测试</h1>
+
+<button id="jsErrorBtn">触发 JS 错误</button>
+<button id="promiseErrorBtn">触发 Promise 错误</button>
+<button id="resourceErrorBtn">加载不存在的图片</button>
+<button id="whiteScreenBtn">模拟白屏</button>
+<button id="offlineBtn">模拟离线缓存</button>
+<button id="removePluginBtn">卸载 JS 错误插件</button>
+
+<script type="module">
+    import { FrontendMonitor } from '../src/index.ts';
+    import trackingPlugin from '../src/plugins/trackingPlugin.ts';
+    import jsErrorPlugin from '../src/plugins/jsError.ts';
+    import promiseErrorPlugin from '../src/plugins/promiseError.ts';
+    import resourceErrorPlugin from '../src/plugins/resourceError.ts';
+    import whiteScreenPlugin from '../src/plugins/whiteScreen.ts';
+    import resourcePerformancePlugin from '../src/plugins/resourcePerformance.ts';
+    import performanceMetricsPlugin from '../src/plugins/performanceMetrics.ts';
+
+    const monitor = new FrontendMonitor({
+        serverUrl: 'http://localhost:3000/monitor/error',
+        version: '1.0.0'
+    });
+
+    monitor.use(trackingPlugin({ monitoredUrls: ['/mpa.html', '/spa.html'] }));
+    monitor.use(jsErrorPlugin);
+    monitor.use(promiseErrorPlugin);
+    monitor.use(resourceErrorPlugin);
+    monitor.use(whiteScreenPlugin);
+    monitor.use(resourcePerformancePlugin);
+    monitor.use(performanceMetricsPlugin);
+
+    monitor.init();
+
+    // JS 错误
+    document.getElementById('jsErrorBtn').onclick = () => {
+        throw new Error('测试 JS 运行时错误');
+    };
+
+    // Promise 错误
+    document.getElementById('promiseErrorBtn').onclick = () => {
+        Promise.reject(new Error('测试 Promise 未捕获异常'));
+    };
+
+    // 资源加载错误
+    document.getElementById('resourceErrorBtn').onclick = () => {
+        const img = document.createElement('img');
+        img.src = 'notfound.png';
+        document.body.appendChild(img);
+    };
+
+    // 模拟白屏
+    document.getElementById('whiteScreenBtn').onclick = () => {
+        document.body.innerHTML = '';
+    };
+
+    // 离线缓存
+    document.getElementById('offlineBtn').onclick = () => {
+        Object.defineProperty(navigator, 'onLine', { value: false, configurable: true });
+        throw new Error('离线状态下的错误');
+    };
+
+    // 卸载插件
+    document.getElementById('removePluginBtn').onclick = () => {
+        monitor.removePlugin('jsError');
+        console.log('已卸载 JS 错误插件');
+    };
+</script>
+</body>
+</html>

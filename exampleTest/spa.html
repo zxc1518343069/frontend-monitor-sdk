@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>Frontend Monitor SDK SPA 测试</title>
+    <!--    <script src="../dist/index.umd.js"></script>-->
+</head>
+<body>
+<h1>Frontend Monitor SDK SPA 测试</h1>
+
+<button id="routeBtn">切换路由</button>
+<button id="jsErrorBtn">触发 JS 错误</button>
+<button id="promiseErrorBtn">触发 Promise 错误</button>
+<button id="resourceErrorBtn">加载不存在的图片</button>
+<button id="offlineBtn">模拟离线缓存</button>
+
+<div id="content">当前路由: /spa.html</div>
+
+<script type="module">
+    import { FrontendMonitor } from '../src/core/monitor';
+    import { trackingPlugin } from '../src';
+    import jsErrorPlugin from '../src/plugins/jsError';
+    import promiseErrorPlugin from '../src/plugins/promiseError';
+    import resourceErrorPlugin from '../src/plugins/resourceError';
+    import resourcePerformancePlugin from '../src/plugins/resourcePerformance';
+    import performanceMetricsPlugin from '../src/plugins/performanceMetrics';
+
+    const monitor = new FrontendMonitor({
+        serverUrl: 'http://localhost:3001/monitor/error',
+        version: '1.0.0'
+    });
+
+    monitor.use(trackingPlugin({
+        monitoredUrls: ['/spa.html', '/spa-route']
+    }));
+    monitor.use(jsErrorPlugin);
+    monitor.use(promiseErrorPlugin);
+    monitor.use(resourceErrorPlugin);
+    monitor.use(resourcePerformancePlugin);
+    monitor.use(performanceMetricsPlugin);
+
+    monitor.init();
+
+    // 切换路由
+    document.getElementById('routeBtn').onclick = () => {
+        history.pushState({}, '', '/spa-route');
+        document.getElementById('content').innerText = '当前路由: /spa-route';
+    };
+
+    // JS 错误
+    document.getElementById('jsErrorBtn').onclick = () => {
+        throw new Error('SPA 测试 JS 错误');
+    };
+
+    // Promise 错误
+    document.getElementById('promiseErrorBtn').onclick = () => {
+        Promise.reject(new Error('SPA 测试 Promise 错误'));
+    };
+
+    // 资源加载错误
+    document.getElementById('resourceErrorBtn').onclick = () => {
+        const img = document.createElement('img');
+        img.src = 'notfound.png';
+        document.body.appendChild(img);
+    };
+
+    // 离线缓存
+    document.getElementById('offlineBtn').onclick = () => {
+        Object.defineProperty(navigator, 'onLine', { value: false, configurable: true });
+        throw new Error('SPA 离线状态下的错误');
+    };
+</script>
+</body>
+</html>

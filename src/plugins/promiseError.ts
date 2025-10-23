@@ -1,5 +1,11 @@
 import { MonitorPlugin } from '../core/types';
-import { ErrorType, PromiseErrorPayload } from '../core/reportTypes';
+import { ErrorType } from '../core/reportTypes';
+
+
+export interface PromiseErrorPayload {
+    message: string;
+    stack?: string;
+}
 
 /**
  * Promise未捕获异常插件

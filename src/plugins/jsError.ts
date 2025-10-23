@@ -1,5 +1,18 @@
 import { MonitorPlugin } from '../core/types';
-import { ErrorType, JsErrorPayload } from '../core/reportTypes';
+import { ErrorType } from '../core/reportTypes';
+
+
+/**
+ * 各错误类型的 payload 类型定义
+ */
+export interface JsErrorPayload {
+    message: string;
+    source?: string;
+    lineno?: number;
+    colno?: number;
+    stack?: string;
+}
+
 
 /**
  * JS运行时错误插件

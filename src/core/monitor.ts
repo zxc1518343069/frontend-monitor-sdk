@@ -1,6 +1,14 @@
 import { MonitorPlugin } from './types';
 import { Reporter } from './reporter';
-import { ErrorType, ReportPayload } from './reportTypes';
+import { ErrorType, ReportPayload, CommonData } from './reportTypes';
+
+
+interface MonitorOptions {
+    serverUrl?: string;
+    version?: string;
+    customReport?: (batch: ReportPayload[]) => void;
+    commonData?: Partial<CommonData>
+}
 
 /**
  * 核心类 FrontendMonitor
@@ -10,14 +18,21 @@ export class FrontendMonitor {
     private plugins: MonitorPlugin[] = [];
     private apiRegistry: Record<string, Function> = {};
     private reporter: Reporter;
+    private commonData: Partial<CommonData> = {};
 
-    constructor(options: { serverUrl?: string; version?: string; customReport?: (batch: ReportPayload[]) => void }) {
+    constructor(options: MonitorOptions) {
         this.reporter = new Reporter({
             serverUrl: options.serverUrl,
             customReport: options.customReport,
-            batchInterval: 5000,
             offlineCacheKey: 'frontend-monitor-offline-cache'
         });
+
+        if (options.version) {
+            this.commonData.version = options.version;
+        }
+        if (options.commonData) {
+            this.commonData = {...this.commonData, ...options.commonData};
+        }
     }
 
     use(plugin: MonitorPlugin) {
@@ -26,7 +41,6 @@ export class FrontendMonitor {
             return;
         }
         this.plugins.push(plugin);
-        plugin.setup(this);
     }
 
     registerApi(apiName: string, fn: Function) {
@@ -38,17 +52,31 @@ export class FrontendMonitor {
         (this as any)[apiName] = fn;
     }
 
-    unregisterApi(apiName: string) {
+    removePlugin(apiName: string) {
         if (this.apiRegistry[apiName]) {
             delete (this as any)[apiName];
             delete this.apiRegistry[apiName];
         }
     }
 
+    report<T extends ErrorType>(type: T, payload: ReportPayload<T>['payload'], commonData?: Partial<CommonData>) {
+        this.reporter.add(type, payload, {...this.commonData, ...commonData});
+    }
+
     /**
-     * 上报方法
+     * 初始化方法
+     * 启动所有已注册插件
      */
-    report<T extends ErrorType>(type: T, payload: ReportPayload<T>['payload'], commonData?: any) {
-        this.reporter.add(type, payload, commonData);
+    init() {
+        console.log('[FrontendMonitor] 初始化 SDK...');
+        this.plugins.forEach(plugin => {
+            try {
+                plugin.setup(this);
+                console.log(`[FrontendMonitor] 插件 ${plugin.name} 已启动`);
+            } catch (err) {
+                console.error(`[FrontendMonitor] 插件 ${plugin.name} 启动失败`, err);
+            }
+        });
+        console.log('[FrontendMonitor] 所有插件已启动');
     }
 }

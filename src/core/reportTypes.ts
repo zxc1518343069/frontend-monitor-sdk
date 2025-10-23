@@ -1,3 +1,6 @@
+import { JsErrorPayload } from "src/plugins/jsError";
+import { PromiseErrorPayload } from "src/plugins/promiseError";
+
 /**
  * 错误类型枚举
  * 所有插件的 type 都必须在这里定义
@@ -25,21 +28,6 @@ export interface CommonData {
     [key: string]: any;    // 用户可扩展字段
 }
 
-/**
- * 各错误类型的 payload 类型定义
- */
-export interface JsErrorPayload {
-    message: string;
-    source?: string;
-    lineno?: number;
-    colno?: number;
-    stack?: string;
-}
-
-export interface PromiseErrorPayload {
-    message: string;
-    stack?: string;
-}
 
 export interface ResourceErrorPayload {
     tagName: string;
