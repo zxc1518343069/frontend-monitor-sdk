@@ -1,22 +1,25 @@
 import { MonitorPlugin } from '../core/types';
+import { ErrorType, JsErrorPayload } from '../core/reportTypes';
 
 /**
- * JS 运行时错误插件
- * 使用 window.onerror 捕获同步运行时错误
+ * JS运行时错误插件
  */
 const jsErrorPlugin: MonitorPlugin = {
     name: 'jsError',
     setup(monitor) {
-        window.onerror = (msg, src, line, col, err) => {
-            monitor.report({
-                type: 'jsError',
-                message: msg,
-                source: src,
-                lineno: line,
-                colno: col,
-                stack: err?.stack
-            });
+        window.onerror = (message, source, lineno, colno, error) => {
+            const payload: JsErrorPayload = {
+                message: String(message),
+                source,
+                lineno,
+                colno,
+                stack: error?.stack
+            };
+            monitor.report(ErrorType.JS_ERROR, payload);
         };
+    },
+    destroy() {
+        window.onerror = null;
     }
 };
 
