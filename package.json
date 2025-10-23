@@ -1,0 +1,27 @@
+{
+  "name": "frontend-monitor-sdk",
+  "version": "1.0.0",
+  "description": "前端sdk",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zxc1518343069/frontend-monitor-sdk.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/zxc1518343069/frontend-monitor-sdk/issues"
+  },
+  "homepage": "https://github.com/zxc1518343069/frontend-monitor-sdk#readme",
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^28.0.8",
+    "@rollup/plugin-node-resolve": "^16.0.3",
+    "rollup": "^4.52.5",
+    "rollup-plugin-typescript2": "^0.36.0",
+    "typescript": "^5.9.3"
+  }
+}
