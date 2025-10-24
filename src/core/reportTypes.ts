@@ -1,5 +1,7 @@
-import {JsErrorPayload} from "src/plugins/jsError";
-import {PromiseErrorPayload} from "src/plugins/promiseError";
+import { JsErrorPayload } from "src/plugins/jsError";
+import { PromiseErrorPayload } from "src/plugins/promiseError";
+import { RrwebPayload } from "src/plugins/rrwebPlugin";
+
 
 /**
  * 错误类型枚举
@@ -13,6 +15,7 @@ export enum ErrorType {
     PERFORMANCE_METRICS = 'performanceMetrics',
     RESOURCE_PERFORMANCE = 'resourcePerformance',
     TRACKING_PV = 'trackPageView',
+    RRWEB = 'rrweb',
     TRACKING_STAY = 'trackStayTime'
 }
 
@@ -72,6 +75,7 @@ export type PayloadMap = {
     [ErrorType.RESOURCE_PERFORMANCE]: ResourcePerformancePayload;
     [ErrorType.TRACKING_PV]: TrackingPvPayload;
     [ErrorType.TRACKING_STAY]: TrackingStayPayload;
+    [ErrorType.RRWEB]: RrwebPayload;
 };
 
 /**
@@ -80,6 +84,7 @@ export type PayloadMap = {
 export interface ReportPayload<T extends ErrorType = ErrorType> {
     type: T;
     commonData: CommonData;
-    payload: PayloadMap[T] & { count?: number };
+    payload: PayloadMap[T]
+    count?: number
     hash: string
 }

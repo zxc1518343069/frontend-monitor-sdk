@@ -1,3 +1,6 @@
+export * from './localCache'
+export * from './hash'
+
 /**
  * 通配符匹配工具
  * 支持 * 通配符，例如 /product/* 可以匹配 /product/123

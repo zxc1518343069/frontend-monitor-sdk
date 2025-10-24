@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>Reporter 新功能测试</title>
+</head>
+<body>
+<h1>Reporter 新功能测试</h1>
+
+<button id="singleUploadBtn">单条上传模式测试</button>
+<button id="batchUploadBtn">批量上传模式测试</button>
+<button id="aggregateBtn">错误聚合测试</button>
+<button id="offlineBtn">模拟离线缓存</button>
+<button id="maxCacheBtn">测试最大缓存限制</button>
+<button id="unloadBtn">模拟页面卸载兜底上报</button>
+
+<script type="module">
+    import { Reporter } from '../src/core/reporter.ts';
+    import { ErrorType } from '../src/core/reportTypes.ts';
+
+    // 创建 Reporter 实例
+    const reporter = new Reporter({
+        serverUrl: 'http://localhost:3000/monitor/error', // 你自己的测试接口
+        batchInterval: 3000,
+        uploadMode: 'batch', // 默认批量模式
+        aggregateErrors: false,
+        offlineCacheKey: 'reporter-test-cache',
+        maxCacheSize: 5,
+        maxFailCount: 3
+    });
+
+    // 单条上传模式测试
+    document.getElementById('singleUploadBtn').onclick = () => {
+        reporter['uploadMode'] = 'single';
+        reporter.add(ErrorType.JS_ERROR, { count: 1 });
+        console.log('单条上传模式：立即上报');
+    };
+
+    // 批量上传模式测试
+    document.getElementById('batchUploadBtn').onclick = () => {
+        reporter['uploadMode'] = 'batch';
+        reporter.add(ErrorType.JS_ERROR, { message: '批量上传测试1', source: 'test.js' });
+        reporter.add(ErrorType.JS_ERROR, { message: '批量上传测试2', source: 'test.js' });
+        console.log('批量上传模式：等待 batchInterval 后上报');
+    };
+
+    // 错误聚合测试
+    document.getElementById('aggregateBtn').onclick = () => {
+        reporter['aggregateErrors'] = true;
+        reporter.add(ErrorType.JS_ERROR, { message: '聚合测试', source: 'test.js' });
+        reporter.add(ErrorType.JS_ERROR, { message: '聚合测试', source: 'test.js' });
+        console.log('错误聚合模式：相同错误只保留一条，增加 count');
+    };
+
+    // 模拟离线缓存
+    document.getElementById('offlineBtn').onclick = () => {
+        Object.defineProperty(navigator, 'onLine', { value: false, configurable: true });
+        reporter.add(ErrorType.JS_ERROR, { message: '离线缓存测试', source: 'test.js' });
+        console.log('离线模式：数据存入 localStorage');
+    };
+
+    // 测试最大缓存限制
+    document.getElementById('maxCacheBtn').onclick = () => {
+        for (let i = 0; i < 10; i++) {
+            reporter.add(ErrorType.JS_ERROR, { message: `缓存测试${i}`, source: 'test.js' });
+        }
+        console.log('最大缓存限制测试：只保留最新的 maxCacheSize 条数据');
+    };
+
+    // 模拟页面卸载兜底上报
+    document.getElementById('unloadBtn').onclick = () => {
+        reporter.add(ErrorType.JS_ERROR, { message: '卸载兜底测试', source: 'test.js' });
+        window.dispatchEvent(new Event('beforeunload'));
+        console.log('页面卸载兜底上报测试');
+    };
+</script>
+</body>
+</html>

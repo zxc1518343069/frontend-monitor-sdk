@@ -1,4 +1,5 @@
-import {ReportPayload} from "../core/reportTypes";
+import type { eventWithTime } from "@rrweb/types";
+import { ReportPayload } from "../core/reportTypes";
 
 
 /**

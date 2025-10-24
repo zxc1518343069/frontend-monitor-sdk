@@ -1,4 +1,5 @@
-import {ErrorType} from "../core/reportTypes";
+import { ErrorType } from "../core/reportTypes";
+
 
 /**
  * @description 计算错误唯一标识的hash值

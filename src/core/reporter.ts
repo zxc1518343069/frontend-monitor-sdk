@@ -1,6 +1,6 @@
-import {ReportPayload, ErrorType, CommonData} from './reportTypes';
-import {clearCache, getLocalCache, saveToCache} from "../utils/localCache";
-import {computeHash} from "../utils/hash";
+import { ReportPayload, ErrorType, CommonData, PayloadMap } from './reportTypes';
+import { clearCache, getLocalCache, saveToCache } from "../utils/localCache";
+import { computeHash } from "../utils/hash";
 
 export type QueuedReportPayload<T extends ErrorType = ErrorType> = ReportPayload<T> & { hash: string };
 
@@ -61,8 +61,6 @@ export class Reporter {
     private requestFailCount: number = 0;
     private backendAvailable: boolean = true;
 
-    private readonly cachedCommonData: Partial<CommonData>;
-
     constructor(options: ReporterOptions) {
         this.serverUrl = options.serverUrl;
         this.customReport = options.customReport;
@@ -73,9 +71,6 @@ export class Reporter {
         this.uploadMode = options.uploadMode || 'single';
         this.errorAggregation = options.errorAggregation || {needErrorNumber: false};
 
-        this.cachedCommonData = {
-            userAgent: navigator.userAgent
-        };
 
         this.setupOfflineFlush();
         this.setupUnloadListener();
@@ -87,7 +82,7 @@ export class Reporter {
      * @param payload 插件专属数据
      * @param commonData 公共信息（可选，用户可扩展）
      */
-    add<T extends ErrorType>(type: T, payload: ReportPayload<T>['payload'], commonData?: Partial<CommonData>) {
+    add<T extends ErrorType>(type: T, payload: PayloadMap[T], commonData?: Partial<CommonData>) {
         const hash = computeHash(type, payload);
 
         const reportItem = createReportItem(type, payload, commonData, hash);
@@ -96,7 +91,7 @@ export class Reporter {
         if (this.errorAggregation) {
             const existing = this.queue.find(item => item.hash === hash);
             if (existing) {
-                existing.payload.count = (existing.payload.count || 1) + 1;
+                existing.count = (existing.count || 1) + 1;
                 return;
             }
         }
@@ -110,7 +105,7 @@ export class Reporter {
 
         if (this.uploadMode === 'single') {
             // 单条上传模式
-            // this.send([reportItem]);
+            this.send([reportItem]);
         } else {
             // 批量上传模式
             this.queue.push(reportItem);
@@ -125,7 +120,6 @@ export class Reporter {
      * 批量上报
      */
     async flush() {
-
         if (this.queue.length === 0) {
             this.timer = null;
             return;
