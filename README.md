@@ -86,7 +86,6 @@ frontend-monitor-sdk/
 1. 引入核心类和插件
 
 ```ts
-复制
 import { FrontendMonitor } from 'frontend-monitor-sdk';
 import {
     trackingPlugin,
@@ -142,9 +141,8 @@ monitor.init();
 2. 手动调用埋点 API
 
 ```ts
-复制
     // 手动记录PV
-    (monitor as any).trackPageView('CustomPage');
+(monitor as any).trackPageView('CustomPage');
 
 // 手动记录停留时长
 (monitor as any).trackStayTime('CustomPage', 5000);
@@ -199,7 +197,6 @@ monitor.init();
 你可以自定义插件：
 
 ```ts
-复制
 const customPlugin = {
     name: 'customPlugin',
     setup(monitor) {
@@ -219,7 +216,7 @@ monitor.use(customPlugin);
 
 ## 📡 上报机制
 
-+ 默认使用 navigator.sendBeacon，支持自定义上报
++ 默认使用 fetch，支持自定义上报
 + 页面卸载时使用 navigator.sendBeacon
 + 可扩展批量上报、去重、离线缓存
 
