@@ -84,7 +84,6 @@ export type PayloadMap = {
 export interface ReportPayload<T extends ErrorType = ErrorType> {
     type: T;
     commonData: CommonData;
-    payload: PayloadMap[T]
-    count?: number
+    payload: PayloadMap[T] & { count?: number }
     hash: string
 }

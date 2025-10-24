@@ -43,7 +43,11 @@ const rrwebPlugin = (options?: RrwebPluginOptions): MonitorPlugin => {
             timer = window.setInterval(() => {
                 console.log('time', uploadInterval, events)
                 if (events.length > 0) {
-                    monitor.report(ErrorType.RRWEB, { events });
+                    monitor.report({
+                        type: ErrorType.RRWEB, payload: {
+                            events
+                        }
+                    });
                     // 如果开启保存到本地
                     if (options?.saveToLocal) {
                         const cache = JSON.parse(localStorage.getItem(cacheKey) || '[]');
@@ -65,7 +69,11 @@ const rrwebPlugin = (options?: RrwebPluginOptions): MonitorPlugin => {
                 const now = Date.now();
                 const recentEvents = events.filter(e => now - e.timestamp <= maxDuration);
                 if (recentEvents.length > 0) {
-                    monitor.report(ErrorType.RRWEB as any, { events: recentEvents });
+                    monitor.report({
+                        type: ErrorType.RRWEB, payload: {
+                            events: recentEvents
+                        }
+                    });
                 }
             };
 

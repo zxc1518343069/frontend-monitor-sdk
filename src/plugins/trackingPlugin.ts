@@ -1,6 +1,7 @@
-import { MonitorPlugin } from '../core/types';
+import { ErrorType } from "src/core/reportTypes";
 import { TrackingPluginOptions } from '../core/pluginTypes';
-import { matchPattern, getCurrentUrl } from '../core/utils';
+import { MonitorPlugin } from '../core/types';
+import { getCurrentUrl, matchPattern } from '../core/utils';
 
 /**
  * 埋点插件
@@ -50,9 +51,10 @@ const trackingPlugin = (options?: TrackingPluginOptions): MonitorPlugin => {
                 const page = pageName || getCurrentUrl();
                 if (!isMonitored(page)) return;
                 monitor.report({
-                    type: 'trackPageView',
-                    page,
-                    timestamp: Date.now()
+                    type: ErrorType.TRACKING_PV,
+                    payload: {
+                        page,
+                    }
                 });
             });
 
@@ -61,10 +63,11 @@ const trackingPlugin = (options?: TrackingPluginOptions): MonitorPlugin => {
                 const page = pageName || getCurrentUrl();
                 if (!isMonitored(page)) return;
                 monitor.report({
-                    type: 'trackStayTime',
-                    page,
-                    duration: duration || (Date.now() - enterTime),
-                    timestamp: Date.now()
+                    type: ErrorType.TRACKING_STAY,
+                    payload: {
+                        page,
+                        duration: duration || (Date.now() - enterTime),
+                    }
                 });
             });
 
@@ -111,10 +114,14 @@ const trackingPlugin = (options?: TrackingPluginOptions): MonitorPlugin => {
             });
         },
         destroy() {
-            window.removeEventListener('load', () => {});
-            window.removeEventListener('popstate', () => {});
-            window.removeEventListener('beforeunload', () => {});
-            document.removeEventListener('visibilitychange', () => {});
+            window.removeEventListener('load', () => {
+            });
+            window.removeEventListener('popstate', () => {
+            });
+            window.removeEventListener('beforeunload', () => {
+            });
+            document.removeEventListener('visibilitychange', () => {
+            });
         }
     };
 };

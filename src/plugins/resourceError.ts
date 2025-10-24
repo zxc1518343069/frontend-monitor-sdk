@@ -1,3 +1,4 @@
+import { ErrorType } from "src/core/reportTypes";
 import { MonitorPlugin } from '../core/types';
 
 /**
@@ -11,9 +12,11 @@ const resourceErrorPlugin: MonitorPlugin = {
             const target = event.target as HTMLElement;
             if (target && (target as any).src) {
                 monitor.report({
-                    type: 'resourceError',
-                    tagName: target.tagName,
-                    src: (target as any).src || (target as any).href
+                    type: ErrorType.RESOURCE_ERROR,
+                    payload: {
+                        tagName: target.tagName,
+                        src: (target as any).src || (target as any).href
+                    }
                 });
             }
         };

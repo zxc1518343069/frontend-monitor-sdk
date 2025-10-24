@@ -1,3 +1,4 @@
+import { ErrorType } from "src/core/reportTypes";
 import { MonitorPlugin } from '../core/types';
 
 /**
@@ -18,31 +19,37 @@ const performanceMetricsPlugin: MonitorPlugin = {
                 list.getEntries().forEach((entry) => {
                     if (entry.name === 'first-contentful-paint') {
                         monitor.report({
-                            type: 'performanceMetrics',
-                            metric: 'FCP',
-                            value: entry.startTime
+                            type: ErrorType.PERFORMANCE_METRICS,
+                            payload: {
+                                metric: 'FCP',
+                                value: entry.startTime
+                            }
                         });
                     }
                 });
             });
             fcpObserver.observe({ type: 'paint', buffered: true });
             (this as any)._fcpObserver = fcpObserver;
-        } catch {}
+        } catch {
+        }
 
         // LCP
         try {
             const lcpObserver = new PerformanceObserver((list) => {
                 list.getEntries().forEach((entry) => {
                     monitor.report({
-                        type: 'performanceMetrics',
-                        metric: 'LCP',
-                        value: entry.startTime
+                        type: ErrorType.PERFORMANCE_METRICS,
+                        payload: {
+                            metric: 'LCP',
+                            value: entry.startTime
+                        }
                     });
                 });
             });
             lcpObserver.observe({ type: 'largest-contentful-paint', buffered: true });
             (this as any)._lcpObserver = lcpObserver;
-        } catch {}
+        } catch {
+        }
 
         // CLS
         try {
@@ -52,16 +59,19 @@ const performanceMetricsPlugin: MonitorPlugin = {
                     if (!entry.hadRecentInput) {
                         clsValue += entry.value;
                         monitor.report({
-                            type: 'performanceMetrics',
-                            metric: 'CLS',
-                            value: clsValue
+                            type: ErrorType.PERFORMANCE_METRICS,
+                            payload: {
+                                metric: 'CLS',
+                                value: clsValue
+                            }
                         });
                     }
                 });
             });
             clsObserver.observe({ type: 'layout-shift', buffered: true });
             (this as any)._clsObserver = clsObserver;
-        } catch {}
+        } catch {
+        }
     },
     destroy() {
         if ((this as any)._fcpObserver) (this as any)._fcpObserver.disconnect();

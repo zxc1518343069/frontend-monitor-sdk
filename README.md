@@ -14,6 +14,7 @@
 - **埋点体系**：自动 PV & 停留时长，支持 URL 白名单过滤
 - **可扩展性**：支持自定义插件、rrweb 操作回放
 - **操作回放**：基于 rrweb 的全量录制与错误触发回放
+- **消息通知**：支持配置事件，触发消息通知
 - **上报机制**：支持 `sendBeacon` / `fetch`，可扩展批量上报、去重、离线缓存
 
 ---
@@ -38,6 +39,7 @@ npm install frontend-monitor-sdk
 |          | `performanceMetricsPlugin`  | 采集 FCP（首次内容绘制）、LCP（最大内容绘制）、CLS（累计布局偏移） | ✅ 已实现 |
 | **埋点体系** | `trackingPlugin`            | 自动记录 PV（页面浏览）和停留时长，支持 URL 白名单过滤        | ✅ 已实现 |
 | **操作回放** | `rrwebPlugin`               | 基于 rrweb 的全量录制与错误触发回放，支持分片上传、隐私保护、本地缓存 | ✅ 已实现 |
+| **消息通知** | `notifyPlugin`              | 在关键事件发生时立即通知开发团队，支持 HTTP API 和自定义通知函数  | ✅ 已实现 |
 | **上报机制** | `Reporter`（核心类内置）           | 支持单条/批量上传、错误聚合、离线缓存、页面卸载兜底上报           | ✅ 已实现 |
 | **本地缓存** | `localCache`（工具模块）          | 封装 localStorage 操作，支持最大缓存数量限制          | ✅ 已实现 |
 
@@ -68,6 +70,7 @@ frontend-monitor-sdk/
     └── plugins/                   # 插件目录
         ├── trackingPlugin.ts      # 埋点插件（自动PV & 停留时长 + URL白名单）
         ├── jsError.ts             # JS运行时错误监控插件
+        ├── notifyPlugin.ts        # 消息通知插件
         ├── promiseError.ts        # Promise未捕获异常监控插件
         ├── resourceError.ts       # 资源加载错误监控插件
         ├── whiteScreen.ts         # 白屏检测插件
@@ -103,6 +106,16 @@ const monitor = new FrontendMonitor({
 // 注册插件
 monitor.use(trackingPlugin({
     monitoredUrls: ['/home', '/product/*', '/about'] // URL白名单
+}));
+
+monitor.use(notifyPlugin({
+    notifyUrl: 'http://localhost:3000/notify', // 你的通知接口
+    notifyTypes: [ErrorType.JS_ERROR, ErrorType.PERFORMANCE_METRICS],
+    threshold: 2000, // 性能指标阈值
+    customNotify: (data) => {
+        console.log('通知触发:', data);
+        alert(`通知触发: ${data.type}`);
+    }
 }));
 monitor.use(rrwebPlugin({
     uploadInterval: 15000, // 每15秒上传一次分片
@@ -175,6 +188,10 @@ monitor.init();
 
 + 基于 rrweb 的全量录制与错误触发回放，支持分片上传、隐私保护、本地缓存
 
+**notifyPlugin**
+
++ 在关键事件发生时立即通知开发团队，支持 HTTP API 和自定义通知函数
+
 ---
 
 ## 🛠 扩展插件
@@ -202,8 +219,8 @@ monitor.use(customPlugin);
 
 ## 📡 上报机制
 
-+ 默认使用 navigator.sendBeacon（页面卸载时也能发送）
-+ 如果不支持 sendBeacon，使用 fetch POST
++ 默认使用 navigator.sendBeacon，支持自定义上报
++ 页面卸载时使用 navigator.sendBeacon
 + 可扩展批量上报、去重、离线缓存
 
 ---

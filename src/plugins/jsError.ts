@@ -28,7 +28,7 @@ const jsErrorPlugin: MonitorPlugin = {
                 colno,
                 stack: error?.stack
             };
-            monitor.report(ErrorType.JS_ERROR, payload);
+            monitor.report({ type: ErrorType.JS_ERROR, payload });
         };
     },
     destroy() {

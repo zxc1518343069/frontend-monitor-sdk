@@ -1,3 +1,4 @@
+import { ErrorType } from "src/core/reportTypes";
 import { MonitorPlugin } from '../core/types';
 
 /**
@@ -13,8 +14,10 @@ const whiteScreenPlugin: MonitorPlugin = {
             const hasContent = tags.some(tag => document.querySelector(tag));
             if (!hasContent) {
                 monitor.report({
-                    type: 'whiteScreen',
-                    message: '页面可能出现白屏'
+                    type: ErrorType.WHITE_SCREEN,
+                    payload: {
+                        message: '页面可能出现白屏'
+                    }
                 });
             }
         };

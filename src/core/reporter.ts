@@ -69,7 +69,7 @@ export class Reporter {
         this.maxRetries = options.maxRetries || 3;
         this.maxCacheSize = options.maxCacheSize || 100;
         this.uploadMode = options.uploadMode || 'single';
-        this.errorAggregation = options.errorAggregation || {needErrorNumber: false};
+        this.errorAggregation = options.errorAggregation || { needErrorNumber: false };
 
 
         this.setupOfflineFlush();
@@ -91,7 +91,7 @@ export class Reporter {
         if (this.errorAggregation) {
             const existing = this.queue.find(item => item.hash === hash);
             if (existing) {
-                existing.count = (existing.count || 1) + 1;
+                existing.payload.count = (existing.payload.count || 1) + 1;
                 return;
             }
         }
@@ -152,7 +152,7 @@ export class Reporter {
             fetch(this.serverUrl, {
                 method: 'POST',
                 body: JSON.stringify(batch),
-                headers: {'Content-Type': 'application/json'}
+                headers: { 'Content-Type': 'application/json' }
             })
                 .then(res => {
                     res.ok ? this.sendSuccess() : this.sendFail(batch);
@@ -232,7 +232,7 @@ export class Reporter {
  * @param commonData
  * @param hash
  */
-function createReportItem<T extends ErrorType>(
+export function createReportItem<T extends ErrorType>(
     type: T,
     payload: ReportPayload<T>['payload'],
     commonData: Partial<CommonData> | undefined,

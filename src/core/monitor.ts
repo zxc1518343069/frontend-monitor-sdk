@@ -1,6 +1,6 @@
 import { MonitorPlugin } from './types';
-import {Reporter, ReporterOptions} from './reporter';
-import { ErrorType, ReportPayload, CommonData } from './reportTypes';
+import { Reporter, ReporterOptions } from './reporter';
+import { ErrorType, ReportPayload, CommonData, PayloadMap } from './reportTypes';
 
 
 interface MonitorOptions {
@@ -9,6 +9,8 @@ interface MonitorOptions {
     customReport?: ReporterOptions['customReport'];
     commonData?: Partial<CommonData>
 }
+
+type ReportHook = <T extends ErrorType>(type: T, payload: ReportPayload<T>['payload']) => void;
 
 /**
  * 核心类 FrontendMonitor
@@ -19,6 +21,7 @@ export class FrontendMonitor {
     private apiRegistry: Record<string, Function> = {};
     private reporter: Reporter;
     private commonData: Partial<CommonData> = {};
+    private reportHooks: ReportHook[] = [];
 
     constructor(options: MonitorOptions) {
         this.reporter = new Reporter({
@@ -31,8 +34,13 @@ export class FrontendMonitor {
             this.commonData.version = options.version;
         }
         if (options.commonData) {
-            this.commonData = {...this.commonData, ...options.commonData};
+            this.commonData = { ...this.commonData, ...options.commonData };
         }
+    }
+
+    // 注册钩子
+    addReportHook(hook: ReportHook) {
+        this.reportHooks.push(hook);
     }
 
     use(plugin: MonitorPlugin) {
@@ -59,8 +67,16 @@ export class FrontendMonitor {
         }
     }
 
-    report<T extends ErrorType>(type: T, payload: ReportPayload<T>['payload'], commonData?: Partial<CommonData>) {
-        this.reporter.add(type, payload, {...this.commonData, ...commonData});
+    report<T extends ErrorType>(props: {
+        type: T,
+        payload: ReportPayload<T>['payload'],
+        commonData?: Partial<CommonData>
+    }) {
+        // 先执行所有钩子
+        this.reportHooks.forEach(hook => hook(type, payload));
+
+        const { type, payload, commonData } = props
+        this.reporter.add(type, payload, { ...this.commonData, ...commonData });
     }
 
     /**

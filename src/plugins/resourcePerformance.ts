@@ -1,3 +1,4 @@
+import { ErrorType } from "src/core/reportTypes";
 import { MonitorPlugin } from '../core/types';
 
 /**
@@ -12,11 +13,13 @@ const resourcePerformancePlugin: MonitorPlugin = {
                 list.getEntries().forEach((entry) => {
                     if (entry.entryType === 'resource') {
                         monitor.report({
-                            type: 'resourcePerformance',
-                            name: entry.name,
-                            initiatorType: (entry as PerformanceResourceTiming).initiatorType,
-                            duration: entry.duration,
-                            transferSize: (entry as PerformanceResourceTiming).transferSize
+                            type: ErrorType.RESOURCE_PERFORMANCE,
+                            payload: {
+                                name: entry.name,
+                                initiatorType: (entry as PerformanceResourceTiming).initiatorType,
+                                duration: entry.duration,
+                                transferSize: (entry as PerformanceResourceTiming).transferSize
+                            }
                         });
                     }
                 });

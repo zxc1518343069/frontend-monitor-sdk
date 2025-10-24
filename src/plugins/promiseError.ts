@@ -18,7 +18,9 @@ const promiseErrorPlugin: MonitorPlugin = {
                 message: event.reason?.message || String(event.reason),
                 stack: event.reason?.stack
             };
-            monitor.report(ErrorType.PROMISE_ERROR, payload);
+            monitor.report({
+                type: ErrorType.PROMISE_ERROR, payload
+            });
         };
         window.addEventListener('unhandledrejection', handler);
         (this as any)._handler = handler;
