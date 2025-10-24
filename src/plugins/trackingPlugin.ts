@@ -47,19 +47,17 @@ const trackingPlugin = (options?: TrackingPluginOptions): MonitorPlugin => {
             };
 
             /** 注册API：手动记录PV */
-            monitor.registerApi('trackPageView', (pageName?: string) => {
+            const trackPageView = (pageName?: string) => {
                 const page = pageName || getCurrentUrl();
                 if (!isMonitored(page)) return;
                 monitor.report({
                     type: ErrorType.TRACKING_PV,
-                    payload: {
-                        page,
-                    }
+                    payload: { page }
                 });
-            });
+            };
 
             /** 注册API：手动记录停留时长 */
-            monitor.registerApi('trackStayTime', (pageName?: string, duration?: number) => {
+            const trackStayTime = (pageName?: string, duration?: number) => {
                 const page = pageName || getCurrentUrl();
                 if (!isMonitored(page)) return;
                 monitor.report({
@@ -69,33 +67,36 @@ const trackingPlugin = (options?: TrackingPluginOptions): MonitorPlugin => {
                         duration: duration || (Date.now() - enterTime),
                     }
                 });
-            });
+            };
+
+            monitor.registerApi('trackPageView', trackPageView);
+            monitor.registerApi('trackStayTime', trackStayTime);
 
             /** 自动PV & 停留时长逻辑 */
             const handlePageChange = () => {
                 const newUrl = getCurrentUrl();
                 if (newUrl !== currentUrl) {
-                    (monitor as any).trackStayTime(currentUrl, Date.now() - enterTime);
+                    trackStayTime(currentUrl, Date.now() - enterTime);
                     enterTime = Date.now();
                     currentUrl = newUrl;
-                    (monitor as any).trackPageView(newUrl);
+                    trackPageView(newUrl);
                 }
             };
 
             const handlePageUnload = () => {
-                (monitor as any).trackStayTime(currentUrl, Date.now() - enterTime);
+                trackStayTime(currentUrl, Date.now() - enterTime);
             };
 
             const handleVisibilityChange = () => {
                 if (document.visibilityState === 'hidden') {
-                    (monitor as any).trackStayTime(currentUrl, Date.now() - enterTime);
+                    trackStayTime(currentUrl, Date.now() - enterTime);
                 }
             };
 
             /** 初始化监听 */
             initMonitoredUrls().then(() => {
                 window.addEventListener('load', () => {
-                    (monitor as any).trackPageView(currentUrl);
+                    trackPageView(currentUrl);
                 });
                 const wrapHistoryMethod = (type: 'pushState' | 'replaceState') => {
                     const original = history[type];

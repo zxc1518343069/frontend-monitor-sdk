@@ -141,11 +141,15 @@ monitor.init();
 2. 手动调用埋点 API
 
 ```ts
-    // 手动记录PV
-(monitor as any).trackPageView('CustomPage');
+
+// 注册 trackingPlugin 后方可调用这两个方法
+// 如果使用自定义插件。, 请先参考扩展插件
+
+// 手动记录PV
+monitor.trackPageView('CustomPage');
 
 // 手动记录停留时长
-(monitor as any).trackStayTime('CustomPage', 5000);
+monitor.trackStayTime('CustomPage', 5000);
 ```
 
 ---
@@ -200,6 +204,7 @@ monitor.init();
 const customPlugin = {
     name: 'customPlugin',
     setup(monitor) {
+        // customApi 将绑定到monitor实例上。如果有需要。
         monitor.registerApi('customApi', () => {
             monitor.report({ type: 'custom', message: 'Hello World' });
         });
