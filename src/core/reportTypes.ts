@@ -1,5 +1,5 @@
-import { JsErrorPayload } from "src/plugins/jsError";
-import { PromiseErrorPayload } from "src/plugins/promiseError";
+import {JsErrorPayload} from "src/plugins/jsError";
+import {PromiseErrorPayload} from "src/plugins/promiseError";
 
 /**
  * 错误类型枚举
@@ -80,5 +80,6 @@ export type PayloadMap = {
 export interface ReportPayload<T extends ErrorType = ErrorType> {
     type: T;
     commonData: CommonData;
-    payload: PayloadMap[T];
+    payload: PayloadMap[T] & { count?: number };
+    hash: string
 }

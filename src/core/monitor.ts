@@ -1,12 +1,12 @@
 import { MonitorPlugin } from './types';
-import { Reporter } from './reporter';
+import {Reporter, ReporterOptions} from './reporter';
 import { ErrorType, ReportPayload, CommonData } from './reportTypes';
 
 
 interface MonitorOptions {
     serverUrl?: string;
     version?: string;
-    customReport?: (batch: ReportPayload[]) => void;
+    customReport?: ReporterOptions['customReport'];
     commonData?: Partial<CommonData>
 }
 
