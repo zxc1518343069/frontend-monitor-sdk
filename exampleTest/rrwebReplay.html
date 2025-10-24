@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>rrweb 回放测试页面</title>
+    <link rel="stylesheet" href="https://unpkg.com/rrweb-player/dist/style.css"/>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+
+        #player {
+            border: 1px solid #ccc;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+<h1>rrweb 回放测试页面</h1>
+<p>此页面会从本地缓存或服务端获取 rrweb 事件数据，并用 rrweb-player 播放。</p>
+
+<button id="loadLocalBtn">从本地缓存加载并回放</button>
+<button id="loadServerBtn">从服务端加载并回放</button>
+
+<div id="player"></div>
+
+<script type="module">
+    import rrwebPlayer from 'rrweb-player';
+
+    const cacheKey = 'rrweb-events-cache';
+
+    // 从本地缓存加载并回放
+    document.getElementById('loadLocalBtn').onclick = () => {
+        const cache = localStorage.getItem(cacheKey);
+        if (!cache || cache.length === 0) {
+            alert('本地缓存中没有 rrweb 数据');
+            return;
+        }
+        // 假设缓存中存的是 { events: [...] }
+        console.log(JSON.parse(cache), typeof JSON.parse(cache))
+        const rrwebData = JSON.parse(cache)?.[0].events;
+        play(rrwebData);
+    };
+
+    // 从服务端加载并回放
+    document.getElementById('loadServerBtn').onclick = async () => {
+        try {
+            const res = await fetch('http://localhost:3000/rrweb-data'); // 替换为你的服务端接口
+            const data = await res.json();
+            play(data.events);
+        } catch (err) {
+            console.error('加载服务端 rrweb 数据失败', err);
+        }
+    };
+
+    // 播放函数
+    function play(events) {
+        new rrwebPlayer({
+            target: document.getElementById('player'),
+            props: {
+                events,
+                showController: true
+            }
+        });
+    }
+</script>
+</body>
+</html>

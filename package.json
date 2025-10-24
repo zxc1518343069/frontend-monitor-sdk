@@ -1,0 +1,32 @@
+{
+  "name": "frontend-monitor-sdk",
+  "version": "1.0.0",
+  "description": "前端sdk",
+  "main": "index.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zxc1518343069/frontend-monitor-sdk.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/zxc1518343069/frontend-monitor-sdk/issues"
+  },
+  "homepage": "https://github.com/zxc1518343069/frontend-monitor-sdk#readme",
+  "devDependencies": {
+    "rrweb-player": "^1.0.0-alpha.4",
+    "typescript": "^5.9.3",
+    "vite": "^6.4.1"
+  },
+  "dependencies": {
+    "@rrweb/types": "^2.0.0-alpha.18",
+    "rrweb": "^2.0.0-alpha.4",
+    "rrweb-player": "^1.0.0-alpha.4"
+  }
+}

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>rrwebPlugin 测试页面</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+
+        .private {
+            background-color: #ffdddd;
+            padding: 5px;
+        }
+
+        input {
+            margin: 5px 0;
+            padding: 5px;
+        }
+
+        button {
+            margin: 5px;
+            padding: 5px 10px;
+        }
+    </style>
+</head>
+<body>
+<h1>rrwebPlugin 测试页面</h1>
+
+<p>这个页面会录制所有操作，并在错误发生时上传最近 N 秒的操作数据。</p>
+
+<div>
+    <label>普通输入框：</label>
+    <input type="text" placeholder="这里会被录制">
+</div>
+
+<div>
+    <label>敏感输入框（屏蔽内容）：</label>
+    <input type="text" class="private" placeholder="这里不会被录制">
+</div>
+
+<button id="clickBtn">点击测试</button>
+<button id="errorBtn">触发 JS 错误</button>
+<button id="promiseErrorBtn">触发 Promise 错误</button>
+
+<script type="module">
+    import { FrontendMonitor } from '../src/index.ts';
+    import rrwebPlugin from '../src/plugins/rrwebPlugin.ts';
+    import jsErrorPlugin from '../src/plugins/jsError.ts';
+
+    // 初始化监控实例
+    const monitor = new FrontendMonitor({
+        serverUrl: 'http://localhost:3000/monitor/error', // 替换为你的测试接口
+        version: '1.0.0'
+    });
+
+    // 注册插件
+    monitor.use(jsErrorPlugin);
+    monitor.use(rrwebPlugin({
+        saveToLocal: true,
+        uploadInterval: 7000, // 每15秒上传一次分片
+        maxReplayDuration: 5000, // 错误触发回放模式下回放最近5秒
+        maskAllInputs: true, // 屏蔽所有输入框内容
+        maskTextSelector: '.private' // 屏蔽指定元素文本
+    }));
+
+    // 启动插件
+    monitor.init();
+
+    // 点击事件测试
+    document.getElementById('clickBtn').onclick = () => {
+        console.log('点击事件已触发');
+    };
+
+    // 触发 JS 错误
+    document.getElementById('errorBtn').onclick = () => {
+        throw new Error('测试 JS 错误');
+    };
+
+    // 触发 Promise 错误
+    document.getElementById('promiseErrorBtn').onclick = () => {
+        Promise.reject(new Error('测试 Promise 错误'));
+    };
+</script>
+</body>
+</html>
