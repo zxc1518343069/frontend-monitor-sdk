@@ -10,6 +10,6 @@ export interface MonitorPlugin<T extends PluginName = PluginName> {
     name: T;
     setup: (monitor: FrontendMonitor) => void;
     dependencies?: T[]
-    destroy?: (monitor: FrontendMonitor) => void;
+    destroy: (monitor: FrontendMonitor) => void;
     updateConfig?: (options: PluginOptionsMap[T]) => void
 }

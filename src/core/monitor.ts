@@ -113,11 +113,19 @@ export class FrontendMonitor {
         (this as any)[apiName] = fn;
     }
 
-    removePlugin(apiName: string) {
+    removeApi(apiName: string) {
         if (this.apiRegistry[apiName]) {
             delete (this as any)[apiName];
             delete this.apiRegistry[apiName];
         }
+    }
+
+    removePlugin(name: PluginName) {
+        const plugin = this.plugins.find(p => p.name === name)
+        if (!plugin) {
+            console.error(`[FrontendMonitor] 插件 ${name} 没有被注册，请仔细核对后再remove}`);
+        }
+        plugin?.destroy(this)
     }
 
     report<T extends ErrorType>(props: {
@@ -127,7 +135,6 @@ export class FrontendMonitor {
     }) {
         // 先执行所有钩子
         this.reportHooks.forEach(hook => hook(type, payload));
-
         const { type, payload, commonData } = props
         this.reporter.add(type, payload, { ...this.commonData, ...commonData });
     }
