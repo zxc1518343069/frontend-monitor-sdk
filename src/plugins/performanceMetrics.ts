@@ -1,6 +1,7 @@
 import { ErrorType } from "src/core/reportTypes";
 import { MonitorPlugin } from 'plugins/types';
 import { PluginName } from "src/plugins/enum";
+import { warnIfNotSupported } from "src/utils/browser";
 
 /**
  * 性能指标插件
@@ -15,11 +16,9 @@ const performanceMetricsPlugin = (): MonitorPlugin => {
     return {
         name: PluginName.PERFORMANCE_METRICS,
         setup(monitor) {
-            if (!('PerformanceObserver' in window)) {
-                console.warn('[FrontendMonitor] 当前浏览器不支持 PerformanceObserver');
+            if (!warnIfNotSupported('PerformanceObserver')) {
                 return;
             }
-
             // FCP
             try {
                 fcpObserver = new PerformanceObserver((list) => {

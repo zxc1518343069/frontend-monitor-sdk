@@ -61,6 +61,9 @@ export class Reporter {
     private requestFailCount: number = 0;
     private backendAvailable: boolean = true;
 
+    private errorMap: Map<string, ReportPayload> = new Map();
+
+
     constructor(options: ReporterOptions) {
         this.serverUrl = options.serverUrl;
         this.customReport = options.customReport;
@@ -70,7 +73,6 @@ export class Reporter {
         this.maxCacheSize = options.maxCacheSize || 100;
         this.uploadMode = options.uploadMode || 'single';
         this.errorAggregation = options.errorAggregation || { needErrorNumber: false };
-
 
         this.setupOfflineFlush();
         this.setupUnloadListener();
@@ -85,33 +87,31 @@ export class Reporter {
     add<T extends ErrorType>(type: T, payload: PayloadMap[T], commonData?: Partial<CommonData>) {
         const hash = computeHash(type, payload);
 
-        const reportItem = createReportItem(type, payload, commonData, hash);
-
         // 如果开启聚合模式
         if (this.errorAggregation) {
-            const existing = this.queue.find(item => item.hash === hash);
+            const existing = this.errorMap.get(hash);
             if (existing) {
                 existing.payload.count = (existing.payload.count || 1) + 1;
                 return;
             }
         }
-
+        const reportItem = createReportItem(type, payload, commonData, hash);
 
         // 如果后台不可用，直接存到本地缓存
         if (!this.backendAvailable || !navigator.onLine) {
             saveToCache(this.cacheKey, reportItem, this.maxCacheSize);
             return;
         }
+        this.errorMap.set(hash, reportItem);
 
         if (this.uploadMode === 'single') {
-            // 单条上传模式
             this.send([reportItem]);
-        } else {
-            // 批量上传模式
-            this.queue.push(reportItem);
-            if (!this.timer) {
-                this.timer = window.setTimeout(() => this.flush(), this.batchInterval);
-            }
+            this.errorMap.delete(hash);
+            return
+        }
+        // 批量上报模式：定时发送
+        if (!this.timer) {
+            this.timer = window.setTimeout(() => this.flush(), this.batchInterval);
         }
     }
 
@@ -125,14 +125,11 @@ export class Reporter {
      * 批量上报
      */
     async flush() {
-        if (this.queue.length === 0) {
-            this.timer = null;
-            return;
-        }
-        const batch = [...this.queue];
-        this.queue = [];
+        if (this.errorMap.size === 0) return;
+        const batch = Array.from(this.errorMap.values());
+        this.errorMap.clear();
         this.timer = null;
-        this.send(batch);
+        await this.send(batch);
     }
 
     /**
@@ -140,7 +137,7 @@ export class Reporter {
      * @param batch
      * @private
      */
-    private send(batch: ReportPayload[]) {
+    private async send(batch: ReportPayload[]) {
 
         if (this.customReport) {
             try {
@@ -154,18 +151,23 @@ export class Reporter {
         }
 
         if (this.serverUrl) {
-            fetch(this.serverUrl, {
-                method: 'POST',
-                body: JSON.stringify(batch),
-                headers: { 'Content-Type': 'application/json' }
-            })
-                .then(res => {
-                    res.ok ? this.sendSuccess() : this.sendFail(batch);
-                })
-                .catch(err => {
-                    console.error('[FrontendMonitor] 批量上报失败', err);
-                    this.sendFail(batch);
+
+            try {
+                const response = await fetch(this.serverUrl, {
+                    method: 'POST',
+                    body: JSON.stringify(batch),
+                    headers: { 'Content-Type': 'application/json' }
                 });
+
+                if (response.ok) {
+                    this.sendSuccess();
+                } else {
+                    this.sendFail(batch);
+                }
+            } catch (err) {
+                console.error('[FrontendMonitor] 批量上报失败', err);
+                this.sendFail(batch);
+            }
         }
     }
 
@@ -173,12 +175,12 @@ export class Reporter {
      * 网络恢复时上报离线缓存
      */
     private setupOfflineFlush() {
-        window.addEventListener('online', () => {
+        window.addEventListener('online', async () => {
             const cache = getLocalCache(this.cacheKey)
             if (cache.length > 0) {
-                this.queue.push(...cache);
-                clearCache(this.cacheKey)
-                this.flush();
+                // ✅ 直接发送缓存数据，不需要加入 Map
+                this.send(cache);
+                clearCache(this.cacheKey);
             }
         });
     }
@@ -192,14 +194,18 @@ export class Reporter {
         } else {
             // 如果是批量模式，失败后重新加入队列
             if (this.uploadMode === 'batch') {
-                this.queue.push(...reportList);
-                this.timer = window.setTimeout(() => this.flush(), this.batchInterval);
+                reportList.forEach(item => {
+                    this.errorMap.set(item.hash, item);
+                });
+                // 重新启动定时器
+                if (!this.timer) {
+                    this.timer = window.setTimeout(() => this.flush(), this.batchInterval);
+                }
             }
         }
     };
 
     private sendSuccess() {
-        this.queue = [];
         this.requestFailCount = 0; // 重置失败计数
     };
 
@@ -214,9 +220,11 @@ export class Reporter {
 
         // 页面关闭、刷新、跳转
         window.addEventListener('beforeunload', () => {
-            if (this.queue.length > 0 && this.serverUrl) {
-                navigator.sendBeacon(this.serverUrl, JSON.stringify(this.queue));
-                this.queue = [];
+            if (this.errorMap.size > 0 && this.serverUrl) {
+                // ✅ 直接从 Map 转换为数组
+                const batch = Array.from(this.errorMap.values());
+                navigator.sendBeacon(this.serverUrl, JSON.stringify(batch));
+                this.errorMap.clear();
             }
         });
 
@@ -227,6 +235,14 @@ export class Reporter {
         //         this.queue = [];
         //     }
         // });
+    }
+
+    destroy() {
+        if (this.timer) {
+            clearTimeout(this.timer);
+            this.timer = null;
+        }
+        this.errorMap.clear();
     }
 }
 

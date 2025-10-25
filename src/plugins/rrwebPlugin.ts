@@ -77,9 +77,8 @@ const rrwebPlugin = (options?: RrwebPluginOptions): MonitorPlugin => {
                     });
                 }
             };
-
-            window.addEventListener('error', uploadRecentEvents);
-            window.addEventListener('unhandledrejection', uploadRecentEvents);
+            monitor.addEventListener(window, 'error', uploadRecentEvents)
+            monitor.addEventListener(window, 'unhandledrejection', uploadRecentEvents)
         },
         destroy() {
             if (timer) {

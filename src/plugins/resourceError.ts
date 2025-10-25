@@ -23,11 +23,10 @@ const resourceErrorPlugin = (): MonitorPlugin => {
                     });
                 }
             };
-            window.addEventListener('error', handler, true);
+            monitor.addEventListener(window, 'error', handler, true)
         },
         destroy() {
             if (handler) {
-                window.removeEventListener('error', handler, true);
                 handler = null
             }
         }

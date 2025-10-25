@@ -96,9 +96,7 @@ const trackingPlugin = (options?: TrackingPluginOptions): MonitorPlugin => {
 
             /** 初始化监听 */
             initMonitoredUrls().then(() => {
-                window.addEventListener('load', () => {
-                    trackPageView(currentUrl);
-                });
+
                 const wrapHistoryMethod = (type: 'pushState' | 'replaceState') => {
                     const original = history[type];
                     return function (this: any, ...args: any[]) {
@@ -110,21 +108,17 @@ const trackingPlugin = (options?: TrackingPluginOptions): MonitorPlugin => {
                 };
                 history.pushState = wrapHistoryMethod('pushState');
                 history.replaceState = wrapHistoryMethod('replaceState');
-                window.addEventListener('popstate', handlePageChange);
-                window.addEventListener('beforeunload', handlePageUnload);
-                document.addEventListener('visibilitychange', handleVisibilityChange);
+                
+                monitor.addEventListener(window, 'load', () => {
+                    trackPageView(currentUrl);
+                });
+                monitor.addEventListener(window, 'popstate', handlePageChange);
+                monitor.addEventListener(window, 'beforeunload', handlePageUnload);
+                monitor.addEventListener(document, 'visibilitychange', handleVisibilityChange);
+
             });
         },
-        destroy() {
-            window.removeEventListener('load', () => {
-            });
-            window.removeEventListener('popstate', () => {
-            });
-            window.removeEventListener('beforeunload', () => {
-            });
-            document.removeEventListener('visibilitychange', () => {
-            });
-        }
+
     };
 };
 
