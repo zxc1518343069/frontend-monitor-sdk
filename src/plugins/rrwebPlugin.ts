@@ -1,6 +1,7 @@
 // src/plugins/rrwebPlugin.ts
 import { FrontendMonitor } from "src/core/monitor";
-import { MonitorPlugin } from '../core/types';
+import { MonitorPlugin } from 'plugins/types';
+import { PluginName } from "src/plugins/enum";
 import { ErrorType } from '../core/reportTypes';
 import { record } from "rrweb";
 import type { eventWithTime } from '@rrweb/types';
@@ -27,7 +28,7 @@ const rrwebPlugin = (options?: RrwebPluginOptions): MonitorPlugin => {
     const maxCacheSize = options?.maxCacheSize || 10;
 
     return {
-        name: 'rrwebPlugin',
+        name: PluginName.RRWEB_PLUGIN,
         setup(monitor: FrontendMonitor) {
             // 初始化 rrweb 录制器
             record({

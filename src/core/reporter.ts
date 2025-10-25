@@ -115,6 +115,11 @@ export class Reporter {
         }
     }
 
+    updateConfig(config: Partial<ReporterOptions>) {
+        if (config.batchInterval !== undefined) this.batchInterval = config.batchInterval;
+        if (config.maxCacheSize !== undefined) this.maxCacheSize = config.maxCacheSize;
+        if (config.maxCacheSize !== undefined) this.maxCacheSize = config.maxCacheSize;
+    }
 
     /**
      * 批量上报

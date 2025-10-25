@@ -1,12 +1,13 @@
 import { ErrorType } from "src/core/reportTypes";
-import { MonitorPlugin } from '../core/types';
+import { MonitorPlugin } from 'plugins/types';
+import { PluginName } from "src/plugins/enum";
 
 /**
  * 白屏检测插件
  * 延迟一定时间后检测页面是否有有效内容
  */
 const whiteScreenPlugin: MonitorPlugin = {
-    name: 'whiteScreen',
+    name: PluginName.WHITE_SCREEN,
     setup(monitor) {
         const delay = 3000; // 默认延迟3秒检测
         const handler = () => {

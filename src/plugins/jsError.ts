@@ -1,4 +1,5 @@
-import { MonitorPlugin } from '../core/types';
+import { MonitorPlugin } from 'plugins/types';
+import { PluginName } from "src/plugins/enum";
 import { ErrorType } from '../core/reportTypes';
 
 
@@ -18,7 +19,7 @@ export interface JsErrorPayload {
  * JS运行时错误插件
  */
 const jsErrorPlugin: MonitorPlugin = {
-    name: 'jsError',
+    name: PluginName.JS_ERROR,
     setup(monitor) {
         window.onerror = (message, source, lineno, colno, error) => {
             const payload: JsErrorPayload = {

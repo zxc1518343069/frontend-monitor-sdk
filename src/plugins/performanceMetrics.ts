@@ -1,12 +1,13 @@
 import { ErrorType } from "src/core/reportTypes";
-import { MonitorPlugin } from '../core/types';
+import { MonitorPlugin } from 'plugins/types';
+import { PluginName } from "src/plugins/enum";
 
 /**
  * 性能指标插件
  * 采集 FCP（首次内容绘制）、LCP（最大内容绘制）、CLS（累计布局偏移）
  */
 const performanceMetricsPlugin: MonitorPlugin = {
-    name: 'performanceMetrics',
+    name: PluginName.PERFORMANCE_METRICS,
     setup(monitor) {
         if (!('PerformanceObserver' in window)) {
             console.warn('[FrontendMonitor] 当前浏览器不支持 PerformanceObserver');

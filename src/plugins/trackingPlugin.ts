@@ -1,6 +1,7 @@
 import { ErrorType } from "src/core/reportTypes";
+import { PluginName } from "src/plugins/enum";
 import { TrackingPluginOptions } from '../core/pluginTypes';
-import { MonitorPlugin } from '../core/types';
+import { MonitorPlugin } from 'plugins/types';
 import { getCurrentUrl, matchPattern } from '../core/utils';
 
 /**
@@ -12,7 +13,7 @@ const trackingPlugin = (options?: TrackingPluginOptions): MonitorPlugin => {
     let monitoredUrlsCache: string[] | null = null; // 缓存URL列表
 
     return {
-        name: 'trackingPlugin',
+        name: PluginName.TRACKING_PLUGIN,
         setup(monitor) {
             let enterTime = Date.now(); // 页面进入时间
             let currentUrl = getCurrentUrl(); // 当前URL

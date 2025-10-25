@@ -1,7 +1,8 @@
 import { FrontendMonitor } from "src/core/monitor";
 import { createReportItem } from "src/core/reporter";
 import { ErrorType, ReportPayload } from "src/core/reportTypes";
-import { MonitorPlugin } from "src/core/types";
+import { PluginName } from "src/plugins/enum";
+import { MonitorPlugin } from "src/plugins/types";
 
 /**
  * NotifyPlugin 配置项
@@ -23,8 +24,7 @@ export interface NotifyPluginOptions {
  */
 const notifyPlugin = (options?: NotifyPluginOptions): MonitorPlugin => {
     return {
-        name: "notifyPlugin",
-
+        name: PluginName.NOTIFY_PLUGIN,
         setup(monitor: FrontendMonitor) {
             // 注册报告钩子，当监控系统上报数据时触发
             monitor.addReportHook((type, payload) => {

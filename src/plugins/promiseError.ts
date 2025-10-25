@@ -1,4 +1,5 @@
-import { MonitorPlugin } from '../core/types';
+import { MonitorPlugin } from 'plugins/types';
+import { PluginName } from "src/plugins/enum";
 import { ErrorType } from '../core/reportTypes';
 
 
@@ -11,7 +12,7 @@ export interface PromiseErrorPayload {
  * Promise未捕获异常插件
  */
 const promiseErrorPlugin: MonitorPlugin = {
-    name: 'promiseError',
+    name: PluginName.PROMISE_ERROR,
     setup(monitor) {
         const handler = (event: PromiseRejectionEvent) => {
             const payload: PromiseErrorPayload = {

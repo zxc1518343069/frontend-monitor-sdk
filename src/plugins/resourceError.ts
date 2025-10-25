@@ -1,12 +1,13 @@
 import { ErrorType } from "src/core/reportTypes";
-import { MonitorPlugin } from '../core/types';
+import { MonitorPlugin } from 'plugins/types';
+import { PluginName } from "src/plugins/enum";
 
 /**
  * 资源加载错误监控插件
  * 使用 window.addEventListener('error', true) 捕获资源加载失败
  */
 const resourceErrorPlugin: MonitorPlugin = {
-    name: 'resourceError',
+    name: PluginName.RESOURCE_ERROR,
     setup(monitor) {
         const handler = (event: Event) => {
             const target = event.target as HTMLElement;

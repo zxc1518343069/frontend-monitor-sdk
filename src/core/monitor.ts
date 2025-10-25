@@ -1,4 +1,5 @@
-import { MonitorPlugin } from './types';
+import { MonitorPlugin } from 'plugins/types';
+import { UpdateConfigEnum, UpdateConfigOptions } from "src/core/types";
 import { Reporter, ReporterOptions } from './reporter';
 import { ErrorType, ReportPayload, CommonData, PayloadMap } from './reportTypes';
 
@@ -36,7 +37,42 @@ export class FrontendMonitor {
         if (options.commonData) {
             this.commonData = { ...this.commonData, ...options.commonData };
         }
+
     }
+
+
+    /** 更新公共数据 */
+    updateCommonData(data: Partial<CommonData>) {
+        this.commonData = { ...this.commonData, ...data };
+        console.log('[FrontendMonitor] commonData 已更新:', this.commonData);
+    }
+
+    updatePluginConfig<T extends UpdateConfigEnum>(
+        pluginName: T,
+        newConfig: UpdateConfigOptions[T]
+    ) {
+
+        // 特殊处理 Reporter 配置更新
+        if (pluginName === 'reportOptions') {
+            this.reporter.updateConfig(newConfig as Partial<ReporterOptions>);
+            console.log(`[FrontendMonitor] Reporter 配置已更新:`, newConfig);
+            return;
+        }
+
+        const plugin = this.plugins.find(p => p.name === pluginName);
+        if (!plugin) {
+            console.warn(`[FrontendMonitor] 插件 ${pluginName} 未注册`);
+            return;
+        }
+
+        if (typeof plugin.updateConfig === 'function') {
+            plugin.updateConfig(newConfig);
+            console.log(`[FrontendMonitor] 插件 ${pluginName} 配置已更新:`, newConfig);
+        } else {
+            console.warn(`[FrontendMonitor] 插件 ${pluginName} 未实现 updateConfig 方法，配置更新可能无效`);
+        }
+    }
+
 
     // 注册钩子
     addReportHook(hook: ReportHook) {
@@ -47,6 +83,17 @@ export class FrontendMonitor {
         if (this.plugins.find(p => p.name === plugin.name)) {
             console.warn(`[FrontendMonitor] 插件 ${plugin.name} 已注册，跳过`);
             return;
+        }
+
+        // 检查插件依赖
+        if (plugin.dependencies) {
+            const missingDeps = plugin.dependencies.filter((dep: string) => {
+                return !this.plugins.find(p => p.name === dep);
+            });
+            if (missingDeps.length > 0) {
+                console.error(`[FrontendMonitor] 插件 ${plugin.name} 缺少依赖: ${missingDeps.join(', ')}`);
+                return;
+            }
         }
         this.plugins.push(plugin);
     }

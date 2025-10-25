@@ -1,12 +1,13 @@
 import { ErrorType } from "src/core/reportTypes";
-import { MonitorPlugin } from '../core/types';
+import { MonitorPlugin } from 'plugins/types';
+import { PluginName } from "src/plugins/enum";
 
 /**
  * 资源性能监控插件
  * 使用 PerformanceObserver 采集资源加载时间、大小等信息
  */
 const resourcePerformancePlugin: MonitorPlugin = {
-    name: 'resourcePerformance',
+    name: PluginName.RESOURCE_PERFORMANCE,
     setup(monitor) {
         if ('PerformanceObserver' in window) {
             const observer = new PerformanceObserver((list) => {
