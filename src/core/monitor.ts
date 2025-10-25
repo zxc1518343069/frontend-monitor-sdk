@@ -1,5 +1,6 @@
 import { MonitorPlugin } from 'plugins/types';
 import { UpdateConfigEnum, UpdateConfigOptions } from "src/core/types";
+import { PluginName } from "src/plugins/enum";
 import { Reporter, ReporterOptions } from './reporter';
 import { ErrorType, ReportPayload, CommonData, PayloadMap } from './reportTypes';
 
@@ -79,12 +80,17 @@ export class FrontendMonitor {
         this.reportHooks.push(hook);
     }
 
-    use(plugin: MonitorPlugin) {
+    // 注册钩子
+    deleteReportHook(name: PluginName) {
+        this.reportHooks = this.reportHooks.filter(item => item.name !== name)
+    }
+
+    use(pluginGn: MonitorPlugin | (() => MonitorPlugin)) {
+        const plugin: MonitorPlugin = typeof pluginGn === 'function' ? pluginGn() : pluginGn
         if (this.plugins.find(p => p.name === plugin.name)) {
             console.warn(`[FrontendMonitor] 插件 ${plugin.name} 已注册，跳过`);
             return;
         }
-
         // 检查插件依赖
         if (plugin.dependencies) {
             const missingDeps = plugin.dependencies.filter((dep: string) => {

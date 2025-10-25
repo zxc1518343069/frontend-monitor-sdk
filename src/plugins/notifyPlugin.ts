@@ -57,6 +57,9 @@ const notifyPlugin = (options?: NotifyPluginOptions): MonitorPlugin => {
                     });
                 }
             });
+        },
+        destroy(monitor) {
+            monitor.deleteReportHook(PluginName.NOTIFY_PLUGIN)
         }
     };
 };

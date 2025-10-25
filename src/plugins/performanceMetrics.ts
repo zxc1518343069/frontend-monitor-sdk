@@ -6,79 +6,84 @@ import { PluginName } from "src/plugins/enum";
  * 性能指标插件
  * 采集 FCP（首次内容绘制）、LCP（最大内容绘制）、CLS（累计布局偏移）
  */
-const performanceMetricsPlugin: MonitorPlugin = {
-    name: PluginName.PERFORMANCE_METRICS,
-    setup(monitor) {
-        if (!('PerformanceObserver' in window)) {
-            console.warn('[FrontendMonitor] 当前浏览器不支持 PerformanceObserver');
-            return;
-        }
+const performanceMetricsPlugin = (): MonitorPlugin => {
 
-        // FCP
-        try {
-            const fcpObserver = new PerformanceObserver((list) => {
-                list.getEntries().forEach((entry) => {
-                    if (entry.name === 'first-contentful-paint') {
-                        monitor.report({
-                            type: ErrorType.PERFORMANCE_METRICS,
-                            payload: {
-                                metric: 'FCP',
-                                value: entry.startTime
-                            }
-                        });
-                    }
-                });
-            });
-            fcpObserver.observe({ type: 'paint', buffered: true });
-            (this as any)._fcpObserver = fcpObserver;
-        } catch {
-        }
+    let fcpObserver: PerformanceObserver | null
+    let lcpObserver: PerformanceObserver | null
+    let clsObserver: PerformanceObserver | null
 
-        // LCP
-        try {
-            const lcpObserver = new PerformanceObserver((list) => {
-                list.getEntries().forEach((entry) => {
-                    monitor.report({
-                        type: ErrorType.PERFORMANCE_METRICS,
-                        payload: {
-                            metric: 'LCP',
-                            value: entry.startTime
+    return {
+        name: PluginName.PERFORMANCE_METRICS,
+        setup(monitor) {
+            if (!('PerformanceObserver' in window)) {
+                console.warn('[FrontendMonitor] 当前浏览器不支持 PerformanceObserver');
+                return;
+            }
+
+            // FCP
+            try {
+                fcpObserver = new PerformanceObserver((list) => {
+                    list.getEntries().forEach((entry) => {
+                        if (entry.name === 'first-contentful-paint') {
+                            monitor.report({
+                                type: ErrorType.PERFORMANCE_METRICS,
+                                payload: {
+                                    metric: 'FCP',
+                                    value: entry.startTime
+                                }
+                            });
                         }
                     });
                 });
-            });
-            lcpObserver.observe({ type: 'largest-contentful-paint', buffered: true });
-            (this as any)._lcpObserver = lcpObserver;
-        } catch {
-        }
+                fcpObserver.observe({ type: 'paint', buffered: true });
+            } catch {
+            }
 
-        // CLS
-        try {
-            let clsValue = 0;
-            const clsObserver = new PerformanceObserver((list) => {
-                list.getEntries().forEach((entry: any) => {
-                    if (!entry.hadRecentInput) {
-                        clsValue += entry.value;
+            // LCP
+            try {
+                lcpObserver = new PerformanceObserver((list) => {
+                    list.getEntries().forEach((entry) => {
                         monitor.report({
                             type: ErrorType.PERFORMANCE_METRICS,
                             payload: {
-                                metric: 'CLS',
-                                value: clsValue
+                                metric: 'LCP',
+                                value: entry.startTime
                             }
                         });
-                    }
+                    });
                 });
-            });
-            clsObserver.observe({ type: 'layout-shift', buffered: true });
-            (this as any)._clsObserver = clsObserver;
-        } catch {
+                lcpObserver.observe({ type: 'largest-contentful-paint', buffered: true });
+                (this as any)._lcpObserver = lcpObserver;
+            } catch {
+            }
+
+            // CLS
+            try {
+                let clsValue = 0;
+                clsObserver = new PerformanceObserver((list) => {
+                    list.getEntries().forEach((entry: any) => {
+                        if (!entry.hadRecentInput) {
+                            clsValue += entry.value;
+                            monitor.report({
+                                type: ErrorType.PERFORMANCE_METRICS,
+                                payload: {
+                                    metric: 'CLS',
+                                    value: clsValue
+                                }
+                            });
+                        }
+                    });
+                });
+                clsObserver.observe({ type: 'layout-shift', buffered: true });
+            } catch {
+            }
+        },
+        destroy() {
+            if (fcpObserver) fcpObserver.disconnect();
+            if (lcpObserver) lcpObserver.disconnect();
+            if (clsObserver) clsObserver.disconnect();
         }
-    },
-    destroy() {
-        if ((this as any)._fcpObserver) (this as any)._fcpObserver.disconnect();
-        if ((this as any)._lcpObserver) (this as any)._lcpObserver.disconnect();
-        if ((this as any)._clsObserver) (this as any)._clsObserver.disconnect();
-    }
-};
+    };
+}
 
 export default performanceMetricsPlugin;
