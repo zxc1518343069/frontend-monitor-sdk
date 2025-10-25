@@ -21,6 +21,8 @@ interface ListenerRecord {
     options?: boolean | AddEventListenerOptions;
 }
 
+type PluginInput = MonitorPlugin | (() => MonitorPlugin);
+
 /**
  * 核心类 FrontendMonitor
  * 负责插件管理、API注册、调用 Reporter 上报数据
@@ -38,7 +40,6 @@ export class FrontendMonitor {
     private pluginListeners: Map<PluginName, ListenerRecord[]> = new Map();
     // 当前正在 setup 的插件名称
     private currentSetupPlugin: PluginName | null = null;
-
 
     constructor(options: MonitorOptions) {
         this.reporter = new Reporter({
@@ -145,24 +146,35 @@ export class FrontendMonitor {
         this.reportHooks = this.reportHooks.filter(item => item.name !== name)
     }
 
-    use(pluginGn: MonitorPlugin | (() => MonitorPlugin)) {
-        const plugin: MonitorPlugin = typeof pluginGn === 'function' ? pluginGn() : pluginGn
+    use(plugin: PluginInput | PluginInput[]): this {
+        // 统一转换为数组处理
+        const pluginList = Array.isArray(plugin) ? plugin : [plugin];
 
-        // O(1) 查找
-        if (this.plugins.has(plugin.name)) {
-            console.warn(`[FrontendMonitor] 插件 ${plugin.name} 已注册，跳过`);
-            return;
-        }
+        pluginList.forEach(pluginGn => {
+            const pluginInstance = typeof pluginGn === 'function' ? pluginGn() : pluginGn;
 
-        // 检查插件依赖
-        if (plugin.dependencies) {
-            const missingDeps = plugin.dependencies.filter(dep => !this.plugins.has(dep));
-            if (missingDeps.length > 0) {
-                console.error(`[FrontendMonitor] 插件 ${plugin.name} 缺少依赖: ${missingDeps.join(', ')}`);
+            // O(1) 查找
+            if (this.plugins.has(pluginInstance.name)) {
+                console.warn(`[FrontendMonitor] 插件 ${pluginInstance.name} 已注册，跳过`);
                 return;
             }
-        }
-        this.plugins.set(plugin.name, plugin);
+
+            // 检查插件依赖
+            if (pluginInstance.dependencies) {
+                const missingDeps = pluginInstance.dependencies.filter(
+                    dep => !this.plugins.has(dep) || !pluginList.find(item => item.name === dep)
+                );
+                if (missingDeps.length > 0) {
+                    console.error(
+                        `[FrontendMonitor] 插件 ${pluginInstance.name} 缺少依赖: ${missingDeps.join(', ')}`
+                    );
+                    return;
+                }
+            }
+            this.plugins.set(pluginInstance.name, pluginInstance);
+        });
+
+        return this; // 支持链式调用
     }
 
     registerApi(apiName: string, fn: Function) {
