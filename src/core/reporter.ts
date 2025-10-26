@@ -1,6 +1,7 @@
 import { ReportPayload, ErrorType, CommonData, PayloadMap } from './reportTypes';
 import { clearCache, getLocalCache, saveToCache } from "../utils/localCache";
 import { computeHash } from "../utils/hash";
+import { DEFAULT_CONFIG } from './constants';
 
 export type QueuedReportPayload<T extends ErrorType = ErrorType> = ReportPayload<T> & { hash: string };
 
@@ -47,7 +48,6 @@ export interface ReporterOptions {
  * 负责批量上报、去重、离线缓存、自定义上报
  */
 export class Reporter {
-    private queue: ReportPayload[] = [];
     private timer: number | null = null;
     private serverUrl?: string;
     private errorAggregation?: ReporterOptions['errorAggregation'];
@@ -67,10 +67,10 @@ export class Reporter {
     constructor(options: ReporterOptions) {
         this.serverUrl = options.serverUrl;
         this.customReport = options.customReport;
-        this.batchInterval = options.batchInterval || 1000;
-        this.cacheKey = options.offlineCacheKey || 'frontend-monitor-offline-cache';
-        this.maxRetries = options.maxRetries || 3;
-        this.maxCacheSize = options.maxCacheSize || 100;
+        this.batchInterval = options.batchInterval || DEFAULT_CONFIG.BATCH_INTERVAL;
+        this.cacheKey = options.offlineCacheKey || DEFAULT_CONFIG.OFFLINE_CACHE_KEY;
+        this.maxRetries = options.maxRetries || DEFAULT_CONFIG.MAX_RETRIES;
+        this.maxCacheSize = options.maxCacheSize || DEFAULT_CONFIG.MAX_CACHE_SIZE;
         this.uploadMode = options.uploadMode || 'single';
         this.errorAggregation = options.errorAggregation || { needErrorNumber: false };
 
@@ -99,7 +99,7 @@ export class Reporter {
 
         // 如果后台不可用，直接存到本地缓存
         if (!this.backendAvailable || !navigator.onLine) {
-            saveToCache(this.cacheKey, reportItem, this.maxCacheSize);
+            saveToCache<ReportPayload>(this.cacheKey, reportItem, this.maxCacheSize);
             return;
         }
         this.errorMap.set(hash, reportItem);
@@ -176,11 +176,12 @@ export class Reporter {
      */
     private setupOfflineFlush() {
         window.addEventListener('online', async () => {
-            const cache = getLocalCache(this.cacheKey)
+            const cache = getLocalCache<ReportPayload>(this.cacheKey);
             if (cache.length > 0) {
                 // ✅ 直接发送缓存数据，不需要加入 Map
                 this.send(cache);
                 clearCache(this.cacheKey);
+
             }
         });
     }
@@ -190,7 +191,7 @@ export class Reporter {
         if (this.requestFailCount >= this.maxRetries) {
             console.warn('[FrontendMonitor] 后台不可用，切换到本地缓存模式');
             this.backendAvailable = false;
-            reportList.forEach(item => saveToCache(this.cacheKey, item, this.maxCacheSize));
+            reportList.forEach(item => saveToCache<ReportPayload>(this.cacheKey, item, this.maxCacheSize));
         } else {
             // 如果是批量模式，失败后重新加入队列
             if (this.uploadMode === 'batch') {

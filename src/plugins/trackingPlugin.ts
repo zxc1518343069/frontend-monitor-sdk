@@ -11,6 +11,8 @@ import { getCurrentUrl, matchPattern } from '../core/utils';
  */
 const trackingPlugin = (options?: TrackingPluginOptions): MonitorPlugin => {
     let monitoredUrlsCache: string[] | null = null; // 缓存URL列表
+    let originalPushState: typeof history.pushState;
+    let originalReplaceState: typeof history.replaceState;
 
     return {
         name: PluginName.TRACKING_PLUGIN,
@@ -96,6 +98,9 @@ const trackingPlugin = (options?: TrackingPluginOptions): MonitorPlugin => {
 
             /** 初始化监听 */
             initMonitoredUrls().then(() => {
+                // 保存原始方法
+                originalPushState = history.pushState;
+                originalReplaceState = history.replaceState;
 
                 const wrapHistoryMethod = (type: 'pushState' | 'replaceState') => {
                     const original = history[type];
@@ -108,7 +113,7 @@ const trackingPlugin = (options?: TrackingPluginOptions): MonitorPlugin => {
                 };
                 history.pushState = wrapHistoryMethod('pushState');
                 history.replaceState = wrapHistoryMethod('replaceState');
-                
+
                 monitor.addEventListener(window, 'load', () => {
                     trackPageView(currentUrl);
                 });
@@ -119,6 +124,19 @@ const trackingPlugin = (options?: TrackingPluginOptions): MonitorPlugin => {
             });
         },
 
+        destroy(monitor) {
+            // 恢复原始的 history 方法
+            if (originalPushState) {
+                history.pushState = originalPushState;
+            }
+            if (originalReplaceState) {
+                history.replaceState = originalReplaceState;
+            }
+
+            // 移除注册的 API
+            monitor.removeApi('trackPageView');
+            monitor.removeApi('trackStayTime');
+        }
     };
 };
 
