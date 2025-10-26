@@ -3,8 +3,8 @@ import { FrontendMonitor } from "src/core/monitor";
 import { MonitorPlugin } from 'plugins/types';
 import { PluginName } from "src/plugins/enum";
 import { saveToCache } from "src/utils/localCache";
-import { ErrorType } from '../core/reportTypes';
-import { DEFAULT_CONFIG } from '../core/constants';
+import { ErrorType } from 'src/core/reportTypes';
+import { DEFAULT_CONFIG } from 'src/core/constants';
 import { record } from "rrweb";
 import type { eventWithTime, listenerHandler } from '@rrweb/types';
 

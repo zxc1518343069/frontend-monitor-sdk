@@ -1,6 +1,5 @@
 import { ReportPayload, ErrorType, CommonData, PayloadMap } from './reportTypes';
-import { clearCache, getLocalCache, saveToCache } from "../utils/localCache";
-import { computeHash } from "../utils/hash";
+import { clearCache, getLocalCache, saveToCache, computeHash } from "src/utils";
 import { DEFAULT_CONFIG } from './constants';
 
 export type QueuedReportPayload<T extends ErrorType = ErrorType> = ReportPayload<T> & { hash: string };

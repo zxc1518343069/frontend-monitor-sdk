@@ -1,7 +1,7 @@
 import { MonitorPlugin } from 'plugins/types';
 import { PluginName } from "src/plugins/enum";
 import { warnIfNotSupported } from "src/utils/browser";
-import { ErrorType } from '../core/reportTypes';
+import { ErrorType } from 'src/core/reportTypes';
 
 
 export interface PromiseErrorPayload {

@@ -1,6 +1,6 @@
 import { MonitorPlugin } from 'plugins/types';
 import { PluginName } from "src/plugins/enum";
-import { ErrorType } from '../core/reportTypes';
+import { ErrorType } from "src/core/reportTypes";
 
 
 /**

@@ -1,9 +1,9 @@
-import { MonitorPlugin } from 'plugins/types';
+import { MonitorPlugin } from 'src/plugins/types';
 import { ERROR_MESSAGES } from "src/core/constants";
 import { UpdateConfigEnum, UpdateConfigOptions } from "src/core/types";
 import { PluginName } from "src/plugins/enum";
 import { Reporter, ReporterOptions } from './reporter';
-import { ErrorType, ReportPayload, CommonData, PayloadMap } from './reportTypes';
+import { ErrorType, ReportPayload, CommonData } from './reportTypes';
 
 
 interface MonitorOptions {

@@ -1,5 +1,6 @@
 export * from './localCache'
 export * from './hash'
+export * from './browser'
 
 /**
  * 通配符匹配工具
@@ -28,3 +29,4 @@ export function logDebug(message: string, ...args: any[]) {
         console.log(`[FrontendMonitor] ${message}`, ...args);
     }
 }
+

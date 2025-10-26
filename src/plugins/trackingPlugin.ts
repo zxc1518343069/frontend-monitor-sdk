@@ -1,8 +1,8 @@
 import { ErrorType } from "src/core/reportTypes";
 import { PluginName } from "src/plugins/enum";
-import { TrackingPluginOptions } from '../core/pluginTypes';
+import { TrackingPluginOptions } from 'src/core/pluginTypes';
 import { MonitorPlugin } from 'plugins/types';
-import { getCurrentUrl, matchPattern } from '../core/utils';
+import { getCurrentUrl, matchPattern } from 'src/utils';
 
 /**
  * 埋点插件
