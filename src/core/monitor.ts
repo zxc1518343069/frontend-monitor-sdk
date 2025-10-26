@@ -210,9 +210,9 @@ export class FrontendMonitor {
         payload: ReportPayload<T>['payload'],
         commonData?: Partial<CommonData>
     }) {
+        const { type, payload, commonData } = props;
         // 先执行所有钩子
         this.reportHooks.forEach(hook => hook(type, payload));
-        const { type, payload, commonData } = props
         this.reporter.add(type, payload, { ...this.commonData, ...commonData });
     }
 

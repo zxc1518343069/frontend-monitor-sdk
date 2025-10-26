@@ -19,7 +19,9 @@
 
 ---
 
-## 📦 安装
+## 📦 安装(todo)
+
+**暂未发布到 npm上**
 
 ```bash
 npm install frontend-monitor-sdk
@@ -109,8 +111,20 @@ monitor.use(trackingPlugin({
 
 monitor.use(notifyPlugin({
     notifyUrl: 'http://localhost:3000/notify', // 你的通知接口
-    notifyTypes: [ErrorType.JS_ERROR, ErrorType.PERFORMANCE_METRICS],
-    threshold: 2000, // 性能指标阈值
+    rules: [
+        {
+            type: ErrorType.JS_ERROR,
+            threshold: 100  // JS错误发生100次才通知
+        },
+        {
+            type: ErrorType.PROMISE_ERROR,
+            threshold: 50   // Promise错误发生50次才通知
+        },
+        {
+            type: ErrorType.PERFORMANCE_METRICS
+            // 不设置 threshold，每次都通知
+        }
+    ],
     customNotify: (data) => {
         console.log('通知触发:', data);
         alert(`通知触发: ${data.type}`);
@@ -193,6 +207,17 @@ monitor.trackStayTime('CustomPage', 5000);
 **notifyPlugin**
 
 + 在关键事件发生时立即通知开发团队，支持 HTTP API 和自定义通知函数
++ 支持为不同错误类型配置不同的阈值
++ 配置示例：
+  ```typescript
+  notifyPlugin({
+    rules: [
+      { type: ErrorType.JS_ERROR, threshold: 100 },       // JS错误100次才通知
+      { type: ErrorType.PROMISE_ERROR, threshold: 50 },   // Promise错误50次才通知
+      { type: ErrorType.PERFORMANCE_METRICS }             // 性能指标每次都通知
+    ]
+  })
+  ```
 
 ---
 

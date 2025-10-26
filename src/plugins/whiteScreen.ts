@@ -1,6 +1,7 @@
 import { ErrorType } from "src/core/reportTypes";
 import { MonitorPlugin } from 'plugins/types';
 import { PluginName } from "src/plugins/enum";
+import { DEFAULT_CONFIG } from "src/core/constants";
 
 /**
  * 白屏检测插件
@@ -13,7 +14,7 @@ const whiteScreenPlugin = (): MonitorPlugin => {
     return {
         name: PluginName.WHITE_SCREEN,
         setup(monitor) {
-            const delay = 3000; // 默认延迟3秒检测
+            const delay = DEFAULT_CONFIG.WHITE_SCREEN_DELAY;
             const handler = () => {
                 const tags = ['IMG', 'CANVAS', 'SVG', 'VIDEO', 'P', 'SPAN', 'DIV'];
                 const hasContent = tags.some(tag => document.querySelector(tag));

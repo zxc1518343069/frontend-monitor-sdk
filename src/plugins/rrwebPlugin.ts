@@ -2,9 +2,11 @@
 import { FrontendMonitor } from "src/core/monitor";
 import { MonitorPlugin } from 'plugins/types';
 import { PluginName } from "src/plugins/enum";
+import { saveToCache } from "src/utils/localCache";
 import { ErrorType } from '../core/reportTypes';
+import { DEFAULT_CONFIG } from '../core/constants';
 import { record } from "rrweb";
-import type { eventWithTime } from '@rrweb/types';
+import type { eventWithTime, listenerHandler } from '@rrweb/types';
 
 export interface RrwebPluginOptions {
     uploadInterval?: number; // 分片上传间隔（毫秒）
@@ -23,15 +25,16 @@ export interface RrwebPayload {
 const rrwebPlugin = (options?: RrwebPluginOptions): MonitorPlugin => {
     let events: eventWithTime[] = []; // 存储录制事件
     let timer: number | null = null;
+    let stopRecord: listenerHandler | null | undefined; // rrweb 录制停止函数
 
-    const cacheKey = options?.localCacheKey || 'rrweb-events-cache';
-    const maxCacheSize = options?.maxCacheSize || 10;
+    const cacheKey = options?.localCacheKey || DEFAULT_CONFIG.RRWEB_CACHE_KEY;
+    const maxCacheSize = options?.maxCacheSize || DEFAULT_CONFIG.RRWEB_MAX_CACHE_SIZE;
 
     return {
         name: PluginName.RRWEB_PLUGIN,
         setup(monitor: FrontendMonitor) {
             // 初始化 rrweb 录制器
-            record({
+            stopRecord = record({
                 emit(event: any) {
                     events.push(event);
                 },
@@ -40,32 +43,30 @@ const rrwebPlugin = (options?: RrwebPluginOptions): MonitorPlugin => {
             });
 
             // 分片上传定时器
-            const uploadInterval = options?.uploadInterval ?? 30000; // 默认30秒
+            const uploadInterval = options?.uploadInterval ?? DEFAULT_CONFIG.RRWEB_UPLOAD_INTERVAL;
             timer = window.setInterval(() => {
-                console.log('time', uploadInterval, events)
                 if (events.length > 0) {
                     monitor.report({
                         type: ErrorType.RRWEB, payload: {
                             events
                         }
                     });
-                    // 如果开启保存到本地
+
+                    // 如果开启保存到本地，使用统一的 localCache 工具
                     if (options?.saveToLocal) {
-                        const cache = JSON.parse(localStorage.getItem(cacheKey) || '[]');
-                        cache.push({ events });
-                        if (cache.length > maxCacheSize) {
-                            cache.shift(); // 删除最早的数据
-                        }
-                        localStorage.setItem(cacheKey, JSON.stringify(cache));
-                        // saveToCache(cacheKey, { events }, maxCacheSize);
+                        saveToCache(
+                            cacheKey,
+                            { events: [...events] },  // 保存副本，避免引用问题
+                            maxCacheSize
+                        );
                     }
+
                     events = [];
                 }
             }, uploadInterval);
 
             // 监听错误事件 → 错误触发回放模式
-            // 错误触发回放模式
-            const maxDuration = options?.maxReplayDuration ?? 10000; // 默认10秒
+            const maxDuration = options?.maxReplayDuration ?? DEFAULT_CONFIG.RRWEB_MAX_REPLAY_DURATION;
             const uploadRecentEvents = () => {
                 const now = Date.now();
                 const recentEvents = events.filter(e => now - e.timestamp <= maxDuration);
@@ -81,10 +82,19 @@ const rrwebPlugin = (options?: RrwebPluginOptions): MonitorPlugin => {
             monitor.addEventListener(window, 'unhandledrejection', uploadRecentEvents)
         },
         destroy() {
+            // 停止 rrweb 录制
+            if (stopRecord) {
+                stopRecord();
+                stopRecord = null;
+            }
+
+            // 清理定时器
             if (timer) {
                 clearInterval(timer);
                 timer = null;
             }
+
+            // 清空事件队列
             events = [];
         }
     };
