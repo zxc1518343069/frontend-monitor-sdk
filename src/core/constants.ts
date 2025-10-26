@@ -43,6 +43,8 @@ export const ERROR_MESSAGES = {
     PLUGIN_REGISTER_FAILED: (pluginName: string) => `[FrontendMonitor] 插件 ${pluginName} 注册失败`,
     PLUGIN_START_FAILED: (pluginName: string) => `[FrontendMonitor] 插件 ${pluginName} 启动失败`,
     API_EXISTS: (apiName: string) => `[FrontendMonitor] API ${apiName} 已存在，跳过注册`,
+    HOOK_EXISTS: (hookName: string) => `[FrontendMonitor] HOOK ${hookName} 已存在，跳过注册`,
+    HOOK_NO_EXISTS: (hookName: string) => `[FrontendMonitor] HOOK ${hookName} 不存在，跳过删除`,
     MISSING_DEPENDENCY: (pluginName: string, deps: string[]) =>
         `[FrontendMonitor] 插件 ${pluginName} 缺少依赖: ${deps.join(', ')}`,
     CACHE_FAILED: (operation: string) => `[FrontendMonitor] 缓存${operation}失败`,

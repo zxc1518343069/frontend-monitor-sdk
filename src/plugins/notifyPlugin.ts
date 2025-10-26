@@ -53,7 +53,7 @@ const notifyPlugin = (options?: NotifyPluginOptions): MonitorPlugin => {
         name: PluginName.NOTIFY_PLUGIN,
         setup(monitor: FrontendMonitor) {
             // 注册报告钩子，当监控系统上报数据时触发
-            monitor.addReportHook((type, payload) => {
+            monitor.addReportHook(PluginName.NOTIFY_PLUGIN, (type, payload) => {
                 // 如果配置了规则，检查当前类型是否在规则中
                 if (ruleMap.size > 0 && !ruleMap.has(type)) {
                     return; // 不在规则中，忽略

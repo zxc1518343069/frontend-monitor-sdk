@@ -1,4 +1,5 @@
 import { MonitorPlugin } from 'plugins/types';
+import { ERROR_MESSAGES } from "src/core/constants";
 import { UpdateConfigEnum, UpdateConfigOptions } from "src/core/types";
 import { PluginName } from "src/plugins/enum";
 import { Reporter, ReporterOptions } from './reporter';
@@ -32,7 +33,7 @@ export class FrontendMonitor {
     private apiRegistry: Record<string, Function> = {};
     private reporter: Reporter;
     private commonData: Partial<CommonData> = {};
-    private reportHooks: ReportHook[] = [];
+    private reportHooksMap: Map<string, ReportHook> = new Map<string, ReportHook>();
 
     private plugins: Map<PluginName, MonitorPlugin> = new Map();
 
@@ -137,13 +138,21 @@ export class FrontendMonitor {
     }
 
     // 注册钩子
-    addReportHook(hook: ReportHook) {
-        this.reportHooks.push(hook);
+    addReportHook(name: string, hook: ReportHook) {
+        const tmp = this.reportHooksMap.get(name)
+        if (!tmp) {
+            return console.error(ERROR_MESSAGES.HOOK_EXISTS(name))
+        }
+        this.reportHooksMap.set(name, hook)
     }
 
     // 注册钩子
-    deleteReportHook(name: PluginName) {
-        this.reportHooks = this.reportHooks.filter(item => item.name !== name)
+    deleteReportHook(name: string) {
+        const tmp = this.reportHooksMap.get(name)
+        if (!tmp) {
+            return console.error(ERROR_MESSAGES.HOOK_NO_EXISTS(name))
+        }
+        this.reportHooksMap.delete(name)
     }
 
     use(plugin: PluginInput | PluginInput[]): this {
@@ -212,7 +221,7 @@ export class FrontendMonitor {
     }) {
         const { type, payload, commonData } = props;
         // 先执行所有钩子
-        this.reportHooks.forEach(hook => hook(type, payload));
+        this.reportHooksMap.forEach(hook => hook(type, payload));
         this.reporter.add(type, payload, { ...this.commonData, ...commonData });
     }
 
