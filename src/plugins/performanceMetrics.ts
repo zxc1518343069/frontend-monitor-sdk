@@ -1,8 +1,8 @@
-import { ErrorType } from "src/core/reportTypes";
-import { MonitorPlugin } from 'plugins/types';
-import { PluginName } from "src/plugins/enum";
-import { warnIfNotSupported } from "src/utils/browser";
-import { DEFAULT_CONFIG } from "src/core/constants";
+import { ErrorType } from "../core/reportTypes";
+import { MonitorPlugin } from './types';
+import { PluginName } from "./enum";
+import { warnIfNotSupported } from "../utils/browser";
+import { DEFAULT_CONFIG } from "../core/constants";
 
 /**
  * 性能指标插件

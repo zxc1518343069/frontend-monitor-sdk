@@ -7,7 +7,7 @@
  * - RrwebEventCache: rrweb 录制数据缓存（rrwebPlugin 使用）
  */
 
-import type { ReportPayload } from 'src/core/reportTypes';
+import type { ReportPayload } from '../core/reportTypes';
 import type { eventWithTime } from '@rrweb/types';
 
 /**

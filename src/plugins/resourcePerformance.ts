@@ -1,8 +1,8 @@
-import { ErrorType } from "src/core/reportTypes";
-import { MonitorPlugin } from 'plugins/types';
-import { PluginName } from "src/plugins/enum";
-import { warnIfNotSupported } from "src/utils/browser";
-import { matchPattern } from "src/utils";
+import { ErrorType } from "../core/reportTypes";
+import { MonitorPlugin } from './types';
+import { PluginName } from "./enum";
+import { warnIfNotSupported } from "../utils/browser";
+import { matchPattern } from "../utils";
 
 export interface ResourcePerformanceOptions {
     /** 只上报加载耗时大于该阈值的资源（单位：ms），默认 0（全量上报） */

@@ -1,5 +1,5 @@
 import { ReportPayload, ErrorType, CommonData, PayloadMap } from './reportTypes';
-import { clearCache, getLocalCache, saveToCache, computeHash } from "src/utils";
+import { clearCache, getLocalCache, saveToCache, computeHash } from "../utils";
 import { DEFAULT_CONFIG } from './constants';
 
 export type QueuedReportPayload<T extends ErrorType = ErrorType> = ReportPayload<T> & { hash: string };
@@ -43,6 +43,32 @@ export interface ReporterOptions {
 }
 
 /**
+ * 创建上报项
+ * @param type
+ * @param payload
+ * @param commonData
+ * @param hash
+ */
+export function createReportItem<T extends ErrorType>(
+    type: T,
+    payload: ReportPayload<T>['payload'],
+    commonData: Partial<CommonData> | undefined,
+    hash: string
+): ReportPayload<T> {
+    return {
+        type,
+        payload,
+        hash,
+        commonData: {
+            url: location.href,
+            time: Date.now(),
+            userAgent: navigator.userAgent,
+            ...(commonData || {})
+        }
+    };
+}
+
+/**
  * Reporter 类
  * 负责批量上报、去重、离线缓存、自定义上报
  */
@@ -57,8 +83,8 @@ export class Reporter {
     private uploadMode: string;
 
     private maxCacheSize: number;
-    private requestFailCount: number = 0;
-    private backendAvailable: boolean = true;
+    private requestFailCount = 0;
+    private backendAvailable = true;
 
     private errorMap: Map<string, ReportPayload> = new Map();
 
@@ -84,6 +110,7 @@ export class Reporter {
      * @param commonData 公共信息（可选，用户可扩展）
      */
     add<T extends ErrorType>(type: T, payload: PayloadMap[T], commonData?: Partial<CommonData>) {
+        console.log('[Reporter] add called:', type);
         const hash = computeHash(type, payload);
 
         // 如果开启聚合模式
@@ -117,7 +144,6 @@ export class Reporter {
     updateConfig(config: Partial<ReporterOptions>) {
         if (config.batchInterval !== undefined) this.batchInterval = config.batchInterval;
         if (config.maxCacheSize !== undefined) this.maxCacheSize = config.maxCacheSize;
-        if (config.maxCacheSize !== undefined) this.maxCacheSize = config.maxCacheSize;
     }
 
     /**
@@ -140,7 +166,7 @@ export class Reporter {
 
         if (this.customReport) {
             try {
-                this.customReport(batch);
+                await this.customReport(batch);
                 this.sendSuccess();
             } catch (err) {
                 console.error('[FrontendMonitor] 自定义上报失败', err);
@@ -185,7 +211,7 @@ export class Reporter {
         });
     }
 
-    private sendFail(reportList: QueuedReportPayload[]) {
+    private sendFail(reportList: ReportPayload[]) {
         this.requestFailCount++;
         if (this.requestFailCount >= this.maxRetries) {
             console.warn('[FrontendMonitor] 后台不可用，切换到本地缓存模式');
@@ -227,14 +253,6 @@ export class Reporter {
                 this.errorMap.clear();
             }
         });
-
-        // // 可选：页面隐藏时兜底上报
-        // document.addEventListener('visibilitychange', () => {
-        //     if (document.visibilityState === 'hidden' && this.queue.length > 0 && this.serverUrl) {
-        //         navigator.sendBeacon(this.serverUrl, JSON.stringify(this.queue));
-        //         this.queue = [];
-        //     }
-        // });
     }
 
     destroy() {
@@ -244,30 +262,4 @@ export class Reporter {
         }
         this.errorMap.clear();
     }
-}
-
-/**
- * 创建上报项
- * @param type
- * @param payload
- * @param commonData
- * @param hash
- */
-export function createReportItem<T extends ErrorType>(
-    type: T,
-    payload: ReportPayload<T>['payload'],
-    commonData: Partial<CommonData> | undefined,
-    hash: string
-): ReportPayload<T> {
-    return {
-        type,
-        payload,
-        hash,
-        commonData: {
-            url: location.href,
-            time: Date.now(),
-            userAgent: navigator.userAgent,
-            ...(commonData || {})
-        }
-    };
 }

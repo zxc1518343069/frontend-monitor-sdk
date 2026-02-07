@@ -1,5 +1,5 @@
-import { FrontendMonitor } from "src/core/monitor";
-import { PluginName, PluginOptionsMap } from "src/plugins/enum";
+import { FrontendMonitor } from "../core/monitor";
+import { PluginName, PluginOptionsMap } from "./enum";
 
 /**
  * 插件接口定义

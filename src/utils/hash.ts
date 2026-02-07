@@ -1,4 +1,4 @@
-import { ErrorType } from "src/core/reportTypes";
+import { ErrorType } from "../core/reportTypes";
 
 
 /**

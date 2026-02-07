@@ -1,8 +1,8 @@
-import { ErrorType } from "src/core/reportTypes";
-import { PluginName } from "src/plugins/enum";
-import { TrackingPluginOptions } from 'src/core/pluginTypes';
-import { MonitorPlugin } from 'plugins/types';
-import { getCurrentUrl, matchPattern } from 'src/utils';
+import { ErrorType } from "../core/reportTypes";
+import { PluginName } from "./enum";
+import { TrackingPluginOptions } from '../core/pluginTypes';
+import { MonitorPlugin } from './types';
+import { getCurrentUrl, matchPattern } from '../utils';
 
 /**
  * 埋点插件
@@ -97,31 +97,34 @@ const trackingPlugin = (options?: TrackingPluginOptions): MonitorPlugin => {
             };
 
             /** 初始化监听 */
-            initMonitoredUrls().then(() => {
-                // 保存原始方法
-                originalPushState = history.pushState;
-                originalReplaceState = history.replaceState;
+            // 必须先注册事件，否则会报错 "addEventListener 只能在插件 setup 中调用"
+            // 具体的逻辑判断（是否监控）在事件处理函数内部进行
+            
+            // 保存原始方法
+            originalPushState = history.pushState;
+            originalReplaceState = history.replaceState;
 
-                const wrapHistoryMethod = (type: 'pushState' | 'replaceState') => {
-                    const original = history[type];
-                    return function (this: any, ...args: any[]) {
-                        // @ts-ignore
-                        const result = original.apply(this, args);
-                        handlePageChange();
-                        return result;
-                    };
+            const wrapHistoryMethod = (type: 'pushState' | 'replaceState') => {
+                const original = history[type];
+                return function (this: any, ...args: any[]) {
+                    // @ts-ignore
+                    const result = original.apply(this, args);
+                    handlePageChange();
+                    return result;
                 };
-                history.pushState = wrapHistoryMethod('pushState');
-                history.replaceState = wrapHistoryMethod('replaceState');
+            };
+            history.pushState = wrapHistoryMethod('pushState');
+            history.replaceState = wrapHistoryMethod('replaceState');
 
-                monitor.addEventListener(window, 'load', () => {
-                    trackPageView(currentUrl);
-                });
-                monitor.addEventListener(window, 'popstate', handlePageChange);
-                monitor.addEventListener(window, 'beforeunload', handlePageUnload);
-                monitor.addEventListener(document, 'visibilitychange', handleVisibilityChange);
-
+            monitor.addEventListener(window, 'load', () => {
+                trackPageView(currentUrl);
             });
+            monitor.addEventListener(window, 'popstate', handlePageChange);
+            monitor.addEventListener(window, 'beforeunload', handlePageUnload);
+            monitor.addEventListener(document, 'visibilitychange', handleVisibilityChange);
+
+            // 异步初始化配置
+            initMonitoredUrls();
         },
 
         destroy(monitor) {

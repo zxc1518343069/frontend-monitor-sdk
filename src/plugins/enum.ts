@@ -1,5 +1,5 @@
 // src/plugins/pluginOptionsMap.ts
-import type { TrackingPluginOptions } from 'src/core/pluginTypes';
+import type { TrackingPluginOptions } from '../core/pluginTypes';
 import type { RrwebPluginOptions } from './rrwebPlugin';
 import type { NotifyPluginOptions } from './notifyPlugin';
 import type { ResourcePerformanceOptions } from './resourcePerformance';

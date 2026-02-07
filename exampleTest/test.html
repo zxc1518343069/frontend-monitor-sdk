@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Frontend Monitor SDK - 全量功能测试</title>
+    <style>
+        :root {
+            --primary-color: #3b82f6;
+            --danger-color: #ef4444;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --bg-color: #f3f4f6;
+            --card-bg: #ffffff;
+            --text-main: #1f2937;
+            --text-secondary: #6b7280;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+            height: 100vh;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 1.5rem;
+            color: var(--text-main);
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 20px;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* 左侧控制面板 */
+        .controls {
+            overflow-y: auto;
+            padding-right: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .card-title {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .btn-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        button {
+            border: none;
+            padding: 10px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            background-color: #e5e7eb;
+            color: var(--text-main);
+        }
+
+        button:hover {
+            filter: brightness(0.95);
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-primary { background-color: var(--primary-color); color: white; }
+        .btn-danger { background-color: var(--danger-color); color: white; }
+        .btn-success { background-color: var(--success-color); color: white; }
+        .btn-warning { background-color: var(--warning-color); color: white; }
+
+        /* 插件开关样式 */
+        .plugin-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .plugin-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #f3f4f6;
+        }
+
+        .plugin-item:last-child {
+            border-bottom: none;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 40px;
+            height: 20px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 20px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 2px;
+            bottom: 2px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: var(--success-color);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(20px);
+        }
+
+        /* 右侧日志面板 */
+        .logs-panel {
+            background: #1e1e1e;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        }
+
+        .logs-header {
+            padding: 15px 20px;
+            background: #2d2d2d;
+            color: #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #3e3e3e;
+        }
+
+        .logs-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.9rem;
+        }
+
+        .log-item {
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 6px;
+            background: #2d2d2d;
+            border-left: 4px solid transparent;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .log-time {
+            color: #9ca3af;
+            font-size: 0.8rem;
+            margin-bottom: 4px;
+        }
+
+        .log-type {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            margin-right: 8px;
+            text-transform: uppercase;
+        }
+
+        .log-detail {
+            color: #d1d5db;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+
+        /* 状态指示灯 */
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: #ccc;
+            margin-right: 6px;
+            transition: background-color 0.3s;
+        }
+        
+        .status-indicator.active {
+            background-color: var(--success-color);
+            box-shadow: 0 0 8px var(--success-color);
+        }
+
+        /* 模拟资源加载错误 */
+        #resource-test-area {
+            display: none;
+        }
+    </style>
+    <!-- 引入 rrweb 样式 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/rrweb@latest/dist/rrweb.min.css"/>
+</head>
+<body>
+    <header>
+        <h1>Frontend Monitor SDK <span style="font-size: 0.9rem; color: var(--text-secondary); font-weight: normal;">v1.0.0</span></h1>
+        <div>
+            <span id="sdk-status-dot" class="status-indicator"></span>
+            <span id="sdk-status-text" style="font-size: 0.9rem; color: var(--text-secondary);">SDK Stopped</span>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- 左侧控制区 -->
+        <div class="controls">
+            <!-- 插件管理 -->
+            <div class="card">
+                <div class="card-title">
+                    🧩 插件管理 (Plugins)
+                    <button class="btn-primary" style="padding: 4px 10px; font-size: 0.8rem;" onclick="applyPlugins()">应用变更</button>
+                </div>
+                <div class="plugin-list">
+                    <div class="plugin-item">
+                        <span>JS Error</span>
+                        <label class="switch"><input type="checkbox" id="chk-jsError" checked><span class="slider"></span></label>
+                    </div>
+                    <div class="plugin-item">
+                        <span>Promise Error</span>
+                        <label class="switch"><input type="checkbox" id="chk-promiseError" checked><span class="slider"></span></label>
+                    </div>
+                    <div class="plugin-item">
+                        <span>Resource Error</span>
+                        <label class="switch"><input type="checkbox" id="chk-resourceError" checked><span class="slider"></span></label>
+                    </div>
+                    <div class="plugin-item">
+                        <span>White Screen</span>
+                        <label class="switch"><input type="checkbox" id="chk-whiteScreen"><span class="slider"></span></label>
+                    </div>
+                    <div class="plugin-item">
+                        <span>Performance Metrics</span>
+                        <label class="switch"><input type="checkbox" id="chk-performanceMetrics"><span class="slider"></span></label>
+                    </div>
+                    <div class="plugin-item">
+                        <span>Resource Performance</span>
+                        <label class="switch"><input type="checkbox" id="chk-resourcePerformance"><span class="slider"></span></label>
+                    </div>
+                    <div class="plugin-item">
+                        <span>Tracking (PV/Stay)</span>
+                        <label class="switch"><input type="checkbox" id="chk-trackingPlugin" checked><span class="slider"></span></label>
+                    </div>
+                    <div class="plugin-item">
+                        <span>RRWeb Record</span>
+                        <label class="switch"><input type="checkbox" id="chk-rrwebPlugin"><span class="slider"></span></label>
+                    </div>
+                    <div class="plugin-item">
+                        <span>Notify</span>
+                        <label class="switch"><input type="checkbox" id="chk-notifyPlugin"><span class="slider"></span></label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 错误监控 -->
+            <div class="card">
+                <div class="card-title">🚨 错误监控 (Error)</div>
+                <div class="btn-group">
+                    <button class="btn-danger" onclick="triggerJsError()">JS Error</button>
+                    <button class="btn-danger" onclick="triggerPromiseError()">Promise Error</button>
+                    <button class="btn-danger" onclick="triggerResourceError()">Resource Error</button>
+                    <button class="btn-warning" onclick="triggerWhiteScreen()">模拟白屏</button>
+                </div>
+            </div>
+
+            <!-- 性能监控 -->
+            <div class="card">
+                <div class="card-title">⚡ 性能监控 (Performance)</div>
+                <div class="btn-group">
+                    <button class="btn-primary" onclick="triggerResourceLoad()">加载资源</button>
+                    <button class="btn-primary" onclick="triggerXHR()">发送 XHR</button>
+                    <button class="btn-primary" onclick="triggerFetch()">发送 Fetch</button>
+                    <button class="btn-primary" onclick="printPerformance()">打印指标</button>
+                </div>
+            </div>
+
+            <!-- 埋点追踪 -->
+            <div class="card">
+                <div class="card-title">📊 埋点追踪 (Tracking)</div>
+                <div class="btn-group">
+                    <button class="btn-success" onclick="safeTrack('trackPageView', '/test-page')">PV 上报</button>
+                    <button class="btn-success" onclick="safeTrack('trackStayTime', '/test-page', 5000)">停留时长</button>
+                    <button class="btn-success" onclick="history.pushState({}, '', '/new-route')">路由跳转</button>
+                </div>
+            </div>
+
+            <!-- 高级功能 -->
+            <div class="card">
+                <div class="card-title">🎥 高级功能 (Advanced)</div>
+                <div class="btn-group">
+                    <button class="btn-warning" onclick="triggerNotify()">触发通知阈值</button>
+                    <button class="btn-warning" onclick="replaySession()">回放录制</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 右侧日志区 -->
+        <div class="logs-panel">
+            <div class="logs-header">
+                <span>实时上报日志</span>
+                <div>
+                    <label style="font-size: 0.8rem; margin-right: 10px;"><input type="checkbox" id="auto-scroll" checked> 自动滚动</label>
+                    <button style="padding: 4px 10px; font-size: 0.8rem;" onclick="clearLogs()">清空</button>
+                </div>
+            </div>
+            <div class="logs-content" id="log-container">
+                <!-- 日志将插入这里 -->
+            </div>
+        </div>
+    </div>
+
+    <div id="resource-test-area"></div>
+
+    <!-- 引入 rrweb -->
+    <script src="https://cdn.jsdelivr.net/npm/rrweb@latest/dist/rrweb.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/rrweb-player@latest/dist/index.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/rrweb-player@latest/dist/style.css"/>
+
+    <!-- 引入 SDK 源码 -->
+    <script type="module">
+        import { FrontendMonitor } from '../src/index.ts';
+        import {
+            jsErrorPlugin,
+            promiseErrorPlugin,
+            resourceErrorPlugin,
+            whiteScreenPlugin,
+            performanceMetricsPlugin,
+            resourcePerformancePlugin,
+            trackingPlugin,
+            rrwebPlugin,
+            notifyPlugin
+        } from '../src/plugins/index.ts';
+        import { ErrorType } from '../src/core/reportTypes.ts';
+
+        // --- 日志 UI 逻辑 (提前定义) ---
+        const logContainer = document.getElementById('log-container');
+        const typeColors = {
+            'jsError': '#ef4444', 'promiseError': '#ef4444', 'resourceError': '#f59e0b',
+            'whiteScreen': '#6b7280', 'performanceMetrics': '#10b981', 'resourcePerformance': '#3b82f6',
+            'trackPageView': '#8b5cf6', 'trackStayTime': '#8b5cf6', 'rrweb': '#ec4899'
+        };
+
+        function addLog(reportItem, customColor) {
+            if (!logContainer) return;
+            const el = document.createElement('div');
+            el.className = 'log-item';
+            const color = customColor || typeColors[reportItem.type] || '#9ca3af';
+            el.style.borderLeftColor = color;
+            const time = new Date(reportItem.commonData.time).toLocaleTimeString();
+            el.innerHTML = `
+                <div class="log-time">${time}</div>
+                <div>
+                    <span class="log-type" style="background-color: ${color}20; color: ${color}">${reportItem.type}</span>
+                    <span class="log-detail">${JSON.stringify(reportItem.payload, null, 2)}</span>
+                </div>
+            `;
+            logContainer.insertBefore(el, logContainer.firstChild);
+            
+            // 自动滚动
+            const autoScroll = document.getElementById('auto-scroll');
+            if (autoScroll && autoScroll.checked) {
+                logContainer.scrollTop = 0;
+            }
+        }
+
+        window.clearLogs = () => {
+            if (logContainer) logContainer.innerHTML = '';
+        };
+
+        let monitorInstance = null;
+
+        // 插件配置工厂
+        const pluginFactories = {
+            jsError: () => jsErrorPlugin(),
+            promiseError: () => promiseErrorPlugin(),
+            resourceError: () => resourceErrorPlugin(),
+            whiteScreen: () => whiteScreenPlugin({
+                rootSelector: 'body',
+                firstCheckDelay: 1000
+            }),
+            performanceMetrics: () => performanceMetricsPlugin(),
+            resourcePerformance: () => resourcePerformancePlugin({
+                threshold: 0,
+                resourceTypes: ['xmlhttprequest', 'fetch', 'img', 'script']
+            }),
+            trackingPlugin: () => trackingPlugin({
+                monitoredUrls: ['*']
+            }),
+            rrwebPlugin: () => {
+                if (window.rrweb) {
+                    return rrwebPlugin({
+                        rrweb: window.rrweb,
+                        saveToLocal: true,
+                        uploadInterval: 5000
+                    });
+                }
+                return null;
+            },
+            notifyPlugin: () => notifyPlugin({
+                rules: [{ type: ErrorType.JS_ERROR, threshold: 2 }],
+                customNotify: (data) => {
+                    addLog({ type: 'NOTIFY', payload: data, commonData: { time: Date.now() } }, '#f59e0b');
+                    alert('触发报警通知！');
+                }
+            })
+        };
+
+        // 初始化/重启 SDK
+        window.applyPlugins = () => {
+            // 1. 销毁旧实例
+            if (monitorInstance) {
+                console.log('正在销毁旧实例...');
+                monitorInstance.destroy();
+                
+                // 重置单例
+                if (FrontendMonitor.resetInstance) {
+                    FrontendMonitor.resetInstance();
+                }
+                monitorInstance = null;
+            }
+
+            // 2. 创建新实例
+            const monitor = new FrontendMonitor({
+                serverUrl: 'http://localhost:3000/report',
+                version: '1.0.0',
+                customReport: async (batch) => {
+                    console.log('SDK Report:', batch);
+                    batch.forEach(item => addLog(item));
+                }
+            });
+
+            // 3. 根据 Checkbox 加载插件
+            const checkboxes = document.querySelectorAll('.plugin-list input[type="checkbox"]');
+            checkboxes.forEach(chk => {
+                if (chk.checked) {
+                    const pluginName = chk.id.replace('chk-', '');
+                    const factory = pluginFactories[pluginName];
+                    if (factory) {
+                        const plugin = factory();
+                        if (plugin) monitor.use(plugin);
+                    }
+                }
+            });
+
+            // 4. 启动
+            monitor.init();
+            monitorInstance = monitor;
+            window.monitor = monitor; // 暴露给全局
+
+            // 更新 UI 状态
+            document.getElementById('sdk-status-dot').classList.add('active');
+            document.getElementById('sdk-status-text').innerText = 'SDK Running';
+            addLog({ type: 'SYSTEM', payload: { message: 'SDK 已重启，插件已更新' }, commonData: { time: Date.now() } }, '#10b981');
+        };
+
+        // 安全调用 track 方法
+        window.safeTrack = (method, ...args) => {
+            if (monitorInstance && monitorInstance[method]) {
+                monitorInstance[method](...args);
+            } else {
+                alert(`插件未启用或 SDK 未初始化: ${method}`);
+            }
+        };
+
+        // 初始加载
+        window.applyPlugins();
+
+        // --- 测试函数 ---
+        window.triggerJsError = () => { const a = undefined; a.b = 1; };
+        window.triggerPromiseError = () => { new Promise((_, r) => r(new Error('Promise Error'))); };
+        window.triggerResourceError = () => { 
+            const img = document.createElement('img'); 
+            img.src = 'https://err.com/x.png'; 
+            document.getElementById('resource-test-area').appendChild(img); 
+        };
+        window.triggerWhiteScreen = () => {
+            addLog({ type: 'TEST', payload: { message: '请刷新页面并保持空白' }, commonData: { time: Date.now() } }, '#9ca3af');
+        };
+        window.triggerResourceLoad = () => { 
+            const img = new Image(); 
+            img.src = 'https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_92x30dp.png?' + Date.now(); 
+        };
+        window.triggerXHR = () => { const xhr = new XMLHttpRequest(); xhr.open('GET', 'https://jsonplaceholder.typicode.com/todos/1'); xhr.send(); };
+        window.triggerFetch = () => { fetch('https://jsonplaceholder.typicode.com/todos/2'); };
+        window.printPerformance = () => { addLog({ type: 'INFO', payload: { message: 'FCP/LCP/CLS 自动上报' }, commonData: { time: Date.now() } }, '#3b82f6'); };
+        window.triggerNotify = () => { try { window.triggerJsError(); } catch(e) {} setTimeout(() => { try { window.triggerJsError(); } catch(e) {} }, 100); };
+        
+        window.replaySession = () => {
+            const data = localStorage.getItem('rrweb-events-cache');
+            if (!data) return alert('无录制数据');
+            try {
+                const events = JSON.parse(data).events;
+                if (events.length < 2) return alert('数据太少');
+                const modal = document.createElement('div');
+                modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:9999;display:flex;justify-content:center;align-items:center;';
+                const container = document.createElement('div');
+                container.style.cssText = 'width:800px;height:600px;background:white;position:relative;';
+                const close = document.createElement('button');
+                close.innerText = '关闭';
+                close.style.cssText = 'position:absolute;top:10px;right:10px;z-index:1000;';
+                close.onclick = () => document.body.removeChild(modal);
+                container.appendChild(close);
+                modal.appendChild(container);
+                document.body.appendChild(modal);
+                new rrwebPlayer({ target: container, props: { events } });
+            } catch (e) { console.error(e); alert('回放失败'); }
+        };
+    </script>
+</body>
+</html>

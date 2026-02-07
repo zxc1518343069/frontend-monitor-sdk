@@ -1,8 +1,8 @@
-import { FrontendMonitor } from "src/core/monitor";
-import { createReportItem } from "src/core/reporter";
-import { ErrorType, ReportPayload } from "src/core/reportTypes";
-import { PluginName } from "src/plugins/enum";
-import { MonitorPlugin } from "src/plugins/types";
+import { FrontendMonitor } from "../core/monitor";
+import { createReportItem } from "../core/reporter";
+import { ErrorType, ReportPayload } from "../core/reportTypes";
+import { PluginName } from "./enum";
+import { MonitorPlugin } from "./types";
 
 /**
  * 通知规则配置

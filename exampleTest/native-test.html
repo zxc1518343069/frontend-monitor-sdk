@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Native HTML Test</title>
+</head>
+<body>
+    <h1>Native HTML Test</h1>
+    <button id="btn-error">Trigger Error</button>
+    <div id="log" style="margin-top: 20px; font-family: monospace; background: #f0f0f0; padding: 10px;"></div>
+
+    <!-- 引入构建好的 SDK -->
+    <script src="../dist/frontend-monitor-sdk.umd.js"></script>
+    
+    <script>
+        // 1. 初始化 SDK (注意 UMD 暴露的全局变量名是 FrontendMonitor)
+        // 这里的 FrontendMonitor 是库的命名空间，我们需要从中解构出类和插件
+        // 根据 vite.lib.config.ts 的配置，name: 'FrontendMonitor'
+        // 通常 UMD 会把 export 的内容挂载到 window.FrontendMonitor 上
+        
+        const { FrontendMonitor: Monitor, jsErrorPlugin } = window.FrontendMonitor;
+
+        const monitor = new Monitor({
+            serverUrl: 'http://localhost:3000/report',
+            version: '1.0.0',
+            customReport: (batch) => {
+                console.log('Report:', batch);
+                document.getElementById('log').innerText = JSON.stringify(batch, null, 2);
+            }
+        });
+
+        monitor.use(jsErrorPlugin());
+        monitor.init();
+
+        // 2. 绑定事件
+        document.getElementById('btn-error').onclick = function() {
+            // 这是一个内联脚本错误
+            // 预期行号：36 (因为这是第 36 行)
+            const a = undefined;
+            a.b = 1; 
+        };
+    </script>
+</body>
+</html>

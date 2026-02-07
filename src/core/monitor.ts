@@ -1,7 +1,7 @@
-import { MonitorPlugin } from 'src/plugins/types';
-import { ERROR_MESSAGES } from "src/core/constants";
-import { UpdateConfigEnum, UpdateConfigOptions } from "src/core/types";
-import { PluginName } from "src/plugins/enum";
+import { MonitorPlugin } from '../plugins/types';
+import { ERROR_MESSAGES } from "./constants";
+import { UpdateConfigEnum, UpdateConfigOptions } from "./types";
+import { PluginName } from "../plugins/enum";
 import { Reporter, ReporterOptions } from './reporter';
 import { ErrorType, ReportPayload, CommonData } from './reportTypes';
 
@@ -31,7 +31,7 @@ type PluginInput = MonitorPlugin | (() => MonitorPlugin);
 export class FrontendMonitor {
     // private plugins: MonitorPlugin[] = [];
     private apiRegistry: Record<string, Function> = {};
-    private reporter: Reporter;
+    private reporter!: Reporter;
     private commonData: Partial<CommonData> = {};
     private reportHooksMap: Map<string, ReportHook> = new Map<string, ReportHook>();
 
@@ -42,7 +42,14 @@ export class FrontendMonitor {
     // 当前正在 setup 的插件名称
     private currentSetupPlugin: PluginName | null = null;
 
+    private static instance: FrontendMonitor | null = null;
+
     constructor(options: MonitorOptions) {
+        if (FrontendMonitor.instance) {
+            console.warn('[FrontendMonitor] 实例已存在，返回现有实例');
+            return FrontendMonitor.instance;
+        }
+
         this.reporter = new Reporter({
             serverUrl: options.serverUrl,
             customReport: options.customReport,
@@ -56,6 +63,18 @@ export class FrontendMonitor {
             this.commonData = { ...this.commonData, ...options.commonData };
         }
 
+        FrontendMonitor.instance = this;
+    }
+
+    public static getInstance(): FrontendMonitor | null {
+        return FrontendMonitor.instance;
+    }
+
+    /**
+     * 重置单例实例（仅用于测试或特殊场景）
+     */
+    public static resetInstance() {
+        FrontendMonitor.instance = null;
     }
 
     addEventListener<K extends keyof WindowEventMap>(
@@ -76,6 +95,20 @@ export class FrontendMonitor {
         target: HTMLElement,
         type: K,
         listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any,
+        options?: boolean | AddEventListenerOptions
+    ): void;
+
+    addEventListener<K extends keyof XMLHttpRequestEventMap>(
+        target: XMLHttpRequest,
+        type: K,
+        listener: (this: XMLHttpRequest, ev: XMLHttpRequestEventMap[K]) => any,
+        options?: boolean | AddEventListenerOptions
+    ): void;
+
+    addEventListener(
+        target: EventTarget,
+        type: string,
+        listener: EventListenerOrEventListenerObject,
         options?: boolean | AddEventListenerOptions
     ): void;
 
@@ -123,24 +156,33 @@ export class FrontendMonitor {
             return;
         }
 
-        const plugin = this.plugins.get(pluginName);
+        // 此时 pluginName 必定是 PluginName 类型，但 TS 无法自动推断排除 'reportOptions'
+        // 所以我们需要显式地处理类型
+        const name = pluginName as unknown as PluginName;
+        const plugin = this.plugins.get(name);
+        
         if (!plugin) {
-            console.warn(`[FrontendMonitor] 插件 ${pluginName} 未注册`);
+            console.warn(`[FrontendMonitor] 插件 ${String(pluginName)} 未注册`);
             return;
         }
 
-        if (typeof plugin.updateConfig === 'function') {
-            plugin.updateConfig(newConfig);
-            console.log(`[FrontendMonitor] 插件 ${pluginName} 配置已更新:`, newConfig);
+        // 使用双重断言绕过 TS 的重叠检查
+        // 我们确信当 pluginName 为 T 时，对应的插件配置类型就是 UpdateConfigOptions[T]
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const typedPlugin = plugin as any;
+
+        if (typeof typedPlugin.updateConfig === 'function') {
+            typedPlugin.updateConfig(newConfig);
+            console.log(`[FrontendMonitor] 插件 ${String(pluginName)} 配置已更新:`, newConfig);
         } else {
-            console.warn(`[FrontendMonitor] 插件 ${pluginName} 未实现 updateConfig 方法，配置更新可能无效`);
+            console.warn(`[FrontendMonitor] 插件 ${String(pluginName)} 未实现 updateConfig 方法，配置更新可能无效`);
         }
     }
 
     // 注册钩子
     addReportHook(name: string, hook: ReportHook) {
         const tmp = this.reportHooksMap.get(name)
-        if (!tmp) {
+        if (tmp) {
             return console.error(ERROR_MESSAGES.HOOK_EXISTS(name))
         }
         this.reportHooksMap.set(name, hook)
@@ -192,11 +234,13 @@ export class FrontendMonitor {
             return;
         }
         this.apiRegistry[apiName] = fn;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (this as any)[apiName] = fn;
     }
 
     removeApi(apiName: string) {
         if (this.apiRegistry[apiName]) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             delete (this as any)[apiName];
             delete this.apiRegistry[apiName];
         }
@@ -220,6 +264,7 @@ export class FrontendMonitor {
         commonData?: Partial<CommonData>
     }) {
         const { type, payload, commonData } = props;
+        console.log('[FrontendMonitor] report called:', type, payload);
         // 先执行所有钩子
         this.reportHooksMap.forEach(hook => hook(type, payload));
         this.reporter.add(type, payload, { ...this.commonData, ...commonData });
@@ -252,5 +297,6 @@ export class FrontendMonitor {
 
         this.plugins.clear();
         this.pluginListeners.clear();
+        this.reportHooksMap.clear();
     }
 }

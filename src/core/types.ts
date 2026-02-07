@@ -1,5 +1,5 @@
-import { ReporterOptions } from "src/core/reporter";
-import { PluginName, PluginOptionsMap } from "src/plugins/enum";
+import { ReporterOptions } from "./reporter";
+import { PluginName, PluginOptionsMap } from "../plugins/enum";
 
 export type UpdateConfigEnum = PluginName | 'reportOptions';
 

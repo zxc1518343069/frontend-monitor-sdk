@@ -4,3 +4,4 @@ package-lock.json
 CLAUDE.md
 .gitignore
 .claude
+dist

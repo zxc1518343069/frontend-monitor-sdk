@@ -1,0 +1,199 @@
+[
+  {
+    "description": "JS 运行时错误 (JS_ERROR)",
+    "type": "jsError",
+    "hash": "a8f9d2...",
+    "commonData": {
+      "url": "http://localhost:3000/product/123",
+      "time": 1717564800000,
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+      "version": "1.0.0",
+      "uid": "user_9527",
+      "network": "4g"
+    },
+    "payload": {
+      "message": "Uncaught TypeError: Cannot read properties of undefined (reading 'map')",
+      "source": "http://localhost:3000/assets/index.js",
+      "lineno": 124,
+      "colno": 35,
+      "stack": "TypeError: Cannot read properties of undefined (reading 'map') at renderList (http://localhost:3000/assets/index.js:124:35) at http://localhost:3000/assets/index.js:50:12",
+      "count": 1
+    }
+  },
+  {
+    "description": "Promise 未捕获异常 (PROMISE_ERROR)",
+    "type": "promiseError",
+    "hash": "b7c3e1...",
+    "commonData": {
+      "url": "http://localhost:3000/login",
+      "time": 1717564805000,
+      "userAgent": "Mozilla/5.0 ...",
+      "version": "1.0.0"
+    },
+    "payload": {
+      "message": "Network Error: Failed to fetch user profile",
+      "stack": "Error: Network Error at fetchData (http://localhost:3000/api.js:45:10)",
+      "count": 1
+    }
+  },
+  {
+    "description": "资源加载错误 (RESOURCE_ERROR)",
+    "type": "resourceError",
+    "hash": "c2d4f5...",
+    "commonData": {
+      "url": "http://localhost:3000/home",
+      "time": 1717564810000,
+      "userAgent": "Mozilla/5.0 ...",
+      "version": "1.0.0"
+    },
+    "payload": {
+      "tagName": "IMG",
+      "src": "https://cdn.example.com/banner_v2.png",
+      "count": 1
+    }
+  },
+  {
+    "description": "白屏检测 (WHITE_SCREEN)",
+    "type": "whiteScreen",
+    "hash": "d5e6a8...",
+    "commonData": {
+      "url": "http://localhost:3000/dashboard",
+      "time": 1717564815000,
+      "userAgent": "Mozilla/5.0 ...",
+      "version": "1.0.0"
+    },
+    "payload": {
+      "message": "页面白屏",
+      "emptyPoints": 18,
+      "totalPoints": 18
+    }
+  },
+  {
+    "description": "性能指标 - FCP (PERFORMANCE_METRICS)",
+    "type": "performanceMetrics",
+    "hash": "e9f1b2...",
+    "commonData": {
+      "url": "http://localhost:3000/home",
+      "time": 1717564820000,
+      "userAgent": "Mozilla/5.0 ...",
+      "version": "1.0.0"
+    },
+    "payload": {
+      "metric": "FCP",
+      "value": 120.5
+    }
+  },
+  {
+    "description": "性能指标 - LCP (PERFORMANCE_METRICS)",
+    "type": "performanceMetrics",
+    "hash": "f0a3c4...",
+    "commonData": {
+      "url": "http://localhost:3000/home",
+      "time": 1717564825000,
+      "userAgent": "Mozilla/5.0 ...",
+      "version": "1.0.0"
+    },
+    "payload": {
+      "metric": "LCP",
+      "value": 850.2
+    }
+  },
+  {
+    "description": "性能指标 - CLS (PERFORMANCE_METRICS)",
+    "type": "performanceMetrics",
+    "hash": "a1b2c3...",
+    "commonData": {
+      "url": "http://localhost:3000/home",
+      "time": 1717564830000,
+      "userAgent": "Mozilla/5.0 ...",
+      "version": "1.0.0"
+    },
+    "payload": {
+      "metric": "CLS",
+      "value": 0.05
+    }
+  },
+  {
+    "description": "资源加载性能 (RESOURCE_PERFORMANCE)",
+    "type": "resourcePerformance",
+    "hash": "b4c5d6...",
+    "commonData": {
+      "url": "http://localhost:3000/home",
+      "time": 1717564835000,
+      "userAgent": "Mozilla/5.0 ...",
+      "version": "1.0.0"
+    },
+    "payload": {
+      "name": "https://api.example.com/data.json",
+      "initiatorType": "fetch",
+      "duration": 450.5,
+      "transferSize": 10240,
+      "nextHopProtocol": "h2",
+      "dnsTime": 20.1,
+      "tcpTime": 50.5,
+      "ttfb": 120.0
+    }
+  },
+  {
+    "description": "页面浏览 PV (TRACKING_PV)",
+    "type": "trackPageView",
+    "hash": "c7d8e9...",
+    "commonData": {
+      "url": "http://localhost:3000/product/detail",
+      "time": 1717564840000,
+      "userAgent": "Mozilla/5.0 ...",
+      "version": "1.0.0"
+    },
+    "payload": {
+      "page": "/product/detail"
+    }
+  },
+  {
+    "description": "页面停留时长 (TRACKING_STAY)",
+    "type": "trackStayTime",
+    "hash": "d0e1f2...",
+    "commonData": {
+      "url": "http://localhost:3000/product/detail",
+      "time": 1717564850000,
+      "userAgent": "Mozilla/5.0 ...",
+      "version": "1.0.0"
+    },
+    "payload": {
+      "page": "/product/detail",
+      "duration": 15400
+    }
+  },
+  {
+    "description": "RRWeb 录制数据 (RRWEB)",
+    "type": "rrweb",
+    "hash": "e3f4a5...",
+    "commonData": {
+      "url": "http://localhost:3000/error-page",
+      "time": 1717564860000,
+      "userAgent": "Mozilla/5.0 ...",
+      "version": "1.0.0"
+    },
+    "payload": {
+      "events": [
+        {
+          "type": 0,
+          "data": {},
+          "timestamp": 1717564855000
+        },
+        {
+          "type": 1,
+          "data": {},
+          "timestamp": 1717564855100
+        },
+        {
+          "type": 2,
+          "data": {
+            "node": { "id": 105 },
+            "type": 0
+          },
+          "timestamp": 1717564856000
+        }
+      ]
+    }
+  }
+]

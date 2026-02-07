@@ -1,6 +1,6 @@
-import { ErrorType } from "src/core/reportTypes";
-import { MonitorPlugin } from 'plugins/types';
-import { PluginName } from "src/plugins/enum";
+import { ErrorType } from "../core/reportTypes";
+import { MonitorPlugin } from './types';
+import { PluginName } from "./enum";
 
 export interface WhiteScreenOptions {
     /** 检测容器，默认为 body */

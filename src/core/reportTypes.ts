@@ -1,6 +1,6 @@
-import { JsErrorPayload } from "src/plugins/jsError";
-import { PromiseErrorPayload } from "src/plugins/promiseError";
-import { RrwebPayload } from "src/plugins/rrwebPlugin";
+import { JsErrorPayload } from "../plugins/jsError";
+import { PromiseErrorPayload } from "../plugins/promiseError";
+import { RrwebPayload } from "../plugins/rrwebPlugin";
 
 
 /**
@@ -28,6 +28,7 @@ export interface CommonData {
     userAgent: string;     // 浏览器UA
     time: number;          // 时间戳
     version?: string;      // 项目版本号
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     [key: string]: any;    // 用户可扩展字段
 }
 

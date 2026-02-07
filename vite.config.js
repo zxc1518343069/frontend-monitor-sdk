@@ -7,7 +7,7 @@ export default defineConfig({
 
     server: {
         port: 3000,          // 开发服务器端口
-        open: '/spa.html',   // 启动时自动打开 spa.html
+        open: '/test.html',   // 启动时自动打开 spa.html
         strictPort: true     // 如果端口被占用则直接报错
     },
 
@@ -16,7 +16,8 @@ export default defineConfig({
             // 多页面入口配置
             input: {
                 spa: resolve(__dirname, 'exampleTest/spa.html'),
-                mpa: resolve(__dirname, 'exampleTest/mpa.html')
+                mpa: resolve(__dirname, 'exampleTest/mpa.html'),
+                test: resolve(__dirname, 'exampleTest/test.html')
             }
         },
         outDir: '../dist-example', // 构建输出目录（相对于 root）
@@ -26,7 +27,8 @@ export default defineConfig({
     // 允许在 HTML 中直接 import TS 源码
     resolve: {
         alias: {
-            '@': resolve(__dirname, 'src')
+            '@': resolve(__dirname, 'src'),
+            'src': resolve(__dirname, 'src')
         }
     }
 });

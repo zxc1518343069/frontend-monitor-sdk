@@ -1,10 +1,10 @@
 // src/plugins/rrwebPlugin.ts
-import { FrontendMonitor } from "src/core/monitor";
-import { MonitorPlugin } from 'plugins/types';
-import { PluginName } from "src/plugins/enum";
-import { saveToCache } from "src/utils/localCache";
-import { ErrorType } from 'src/core/reportTypes';
-import { DEFAULT_CONFIG } from 'src/core/constants';
+import { FrontendMonitor } from "../core/monitor";
+import { MonitorPlugin } from './types';
+import { PluginName } from "./enum";
+import { saveToCache } from "../utils/localCache";
+import { ErrorType } from '../core/reportTypes';
+import { DEFAULT_CONFIG } from '../core/constants';
 import type { eventWithTime, listenerHandler } from '@rrweb/types';
 
 // 定义 rrweb 的核心类型（避免直接 import rrweb 导致打包依赖）

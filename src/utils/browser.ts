@@ -1,5 +1,5 @@
 // utils/browser.ts
-import { ERROR_MESSAGES } from "src/core/constants";
+import { ERROR_MESSAGES } from "../core/constants";
 
 export function isPerformanceObserverSupported(): boolean {
     return 'PerformanceObserver' in window;
