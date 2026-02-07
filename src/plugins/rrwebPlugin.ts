@@ -5,10 +5,19 @@ import { PluginName } from "src/plugins/enum";
 import { saveToCache } from "src/utils/localCache";
 import { ErrorType } from 'src/core/reportTypes';
 import { DEFAULT_CONFIG } from 'src/core/constants';
-import { record } from "rrweb";
 import type { eventWithTime, listenerHandler } from '@rrweb/types';
 
+// 定义 rrweb 的核心类型（避免直接 import rrweb 导致打包依赖）
+interface RRWebInstance {
+    record: (options: any) => listenerHandler | undefined;
+}
+
 export interface RrwebPluginOptions {
+    /** 
+     * 必须传入 rrweb 实例 
+     * import * as rrweb from 'rrweb';
+     */
+    rrweb: RRWebInstance;
     uploadInterval?: number; // 分片上传间隔（毫秒）
     maxReplayDuration?: number; // 错误触发回放模式下的最大回放时长（毫秒）
     maskAllInputs?: boolean; // 屏蔽所有输入框内容
@@ -33,14 +42,24 @@ const rrwebPlugin = (options?: RrwebPluginOptions): MonitorPlugin => {
     return {
         name: PluginName.RRWEB_PLUGIN,
         setup(monitor: FrontendMonitor) {
+            if (!options?.rrweb) {
+                console.error('[FrontendMonitor] rrwebPlugin 启动失败: 未传入 rrweb 实例');
+                return;
+            }
+
             // 初始化 rrweb 录制器
-            stopRecord = record({
-                emit(event: any) {
-                    events.push(event);
-                },
-                maskAllInputs: options?.maskAllInputs ?? true,
-                maskTextSelector: options?.maskTextSelector ?? '.sensitive'
-            });
+            try {
+                stopRecord = options.rrweb.record({
+                    emit(event: any) {
+                        events.push(event);
+                    },
+                    maskAllInputs: options?.maskAllInputs ?? true,
+                    maskTextSelector: options?.maskTextSelector ?? '.sensitive'
+                });
+            } catch (err) {
+                console.error('[FrontendMonitor] rrweb 录制启动失败', err);
+                return;
+            }
 
             // 分片上传定时器
             const uploadInterval = options?.uploadInterval ?? DEFAULT_CONFIG.RRWEB_UPLOAD_INTERVAL;

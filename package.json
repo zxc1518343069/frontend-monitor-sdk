@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "build:lib": "vite build --config vite.lib.config.ts",
     "preview": "vite preview"
   },
   "repository": {
@@ -20,13 +21,15 @@
   },
   "homepage": "https://github.com/zxc1518343069/frontend-monitor-sdk#readme",
   "devDependencies": {
-    "rrweb-player": "^1.0.0-alpha.4",
-    "typescript": "^5.9.3",
-    "vite": "^6.4.1"
-  },
-  "dependencies": {
     "@rrweb/types": "^2.0.0-alpha.18",
     "rrweb": "^2.0.0-alpha.4",
-    "rrweb-player": "^1.0.0-alpha.4"
+    "rrweb-player": "^1.0.0-alpha.4",
+    "typescript": "^5.9.3",
+    "vite": "^6.4.1",
+    "vite-plugin-dts": "^4.5.4"
+  },
+  "peerDependencies": {
+    "@rrweb/types": ">=2.0.0",
+    "rrweb": ">=2.0.0"
   }
 }

@@ -39,6 +39,10 @@ export interface ResourceErrorPayload {
 
 export interface WhiteScreenPayload {
     message: string;
+    /** 空白采样点数量 */
+    emptyPoints?: number;
+    /** 总采样点数量 */
+    totalPoints?: number;
 }
 
 export interface PerformanceMetricsPayload {
@@ -47,10 +51,22 @@ export interface PerformanceMetricsPayload {
 }
 
 export interface ResourcePerformancePayload {
+    /** 资源名称（通常是 URL） */
     name: string;
+    /** 资源类型 (script, css, img, xmlhttprequest 等) */
     initiatorType: string;
+    /** 加载耗时 (ms) */
     duration: number;
+    /** 传输大小 (bytes) */
     transferSize: number;
+    /** 协议版本 (h2, http/1.1 等) */
+    nextHopProtocol?: string;
+    /** DNS 查询耗时 (ms) */
+    dnsTime?: number;
+    /** TCP 连接耗时 (ms) */
+    tcpTime?: number;
+    /** 首字节时间 (Time to First Byte) (ms) */
+    ttfb?: number;
 }
 
 export interface TrackingPvPayload {

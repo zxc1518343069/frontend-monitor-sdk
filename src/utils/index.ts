@@ -5,9 +5,13 @@ export * from './browser'
 /**
  * 通配符匹配工具
  * 支持 * 通配符，例如 /product/* 可以匹配 /product/123
+ * 也支持直接传入 RegExp 对象
  */
-export function matchPattern(pattern: string, value: string): boolean {
-    if (pattern.includes('*')) {
+export function matchPattern(pattern: string | RegExp, value: string): boolean {
+    if (pattern instanceof RegExp) {
+        return pattern.test(value);
+    }
+    if (typeof pattern === 'string' && pattern.includes('*')) {
         const regex = new RegExp('^' + pattern.replace(/\*/g, '.*') + '$');
         return regex.test(value);
     }
